@@ -25,23 +25,53 @@
   }
 
   .dark {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
-    --card: 224 71% 6%;
-    --card-foreground: 213 31% 91%;
-    --primary: 186 100% 42%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 222 47% 11%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 223 47% 11%;
-    --muted-foreground: 215 20.2% 70%;
-    --accent: 216 34% 17%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 216 34% 17%;
-    --input: 216 34% 17%;
-    --ring: 186 100% 42%;
+    /* Catppuccin Mocha - 基础背景 */
+    --background: 240 21% 15%;
+    /* Base #1e1e2e */
+    --foreground: 226 64% 88%;
+    /* Text #cdd6f4 */
+    --card: 237 16% 23%;
+    /* Surface0 #313244 */
+    --card-foreground: 226 64% 88%;
+    /* Text #cdd6f4 */
+
+    /* Catppuccin Mocha - 主色调 (Sky 青色) */
+    --primary: 197 97% 75%;
+    /* Sky #89dceb */
+    --primary-foreground: 240 21% 15%;
+    /* Base #1e1e2e */
+
+    /* Catppuccin Mocha - 次要色 */
+    --secondary: 233 13% 41%;
+    /* Surface2 #585b70 */
+    --secondary-foreground: 226 64% 88%;
+    /* Text #cdd6f4 */
+
+    /* Catppuccin Mocha - 柔和背景 */
+    --muted: 232 13% 35%;
+    /* Surface1 #45475a */
+    --muted-foreground: 227 35% 80%;
+    /* Subtext0 #a6adc8 */
+
+    /* Catppuccin Mocha - 强调色 (Teal 青绿) */
+    --accent: 170 57% 73%;
+    /* Teal #94e2d5 */
+    --accent-foreground: 240 21% 15%;
+    /* Base #1e1e2e */
+
+    /* Catppuccin Mocha - 警告色 (Red) */
+    --destructive: 343 81% 75%;
+    /* Red #f38ba8 */
+    --destructive-foreground: 226 64% 88%;
+    /* Text #cdd6f4 */
+
+    /* Catppuccin Mocha - 边框和输入 */
+    --border: 232 13% 35%;
+    /* Surface1 #45475a */
+    --input: 237 16% 23%;
+    /* Surface0 #313244 */
+    --ring: 197 97% 75%;
+    /* Sky #89dceb */
   }
 }
 

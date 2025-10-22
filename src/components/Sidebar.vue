@@ -32,14 +32,14 @@
         v-for="item in menuItems"
         :key="item.path"
         :to="item.path"
-        v-slot="{ isActive }"
+        v-slot="{ isActive, isExactActive }"
         custom
       >
         <a
           @click="$router.push(item.path)"
           class="flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200 cursor-pointer"
           :class="[
-            isActive 
+            (item.path === '/' ? isExactActive : isActive)
               ? 'bg-primary/10 text-primary font-medium shadow-sm' 
               : 'text-foreground/70 hover:bg-accent/50 hover:text-foreground',
             sidebarStore.isCollapsed ? 'justify-center' : ''
