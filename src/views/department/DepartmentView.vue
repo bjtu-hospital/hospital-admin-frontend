@@ -1,46 +1,53 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-4">
     <!-- 顶部操作栏 -->
-    <div class="bg-card rounded-lg border border-border p-6">
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <h2 class="text-2xl font-semibold text-foreground">科室管理</h2>
-          <p class="text-sm text-muted-foreground mt-1">管理医院大科室和详细科室信息</p>
+    <div class="bg-card rounded-lg border border-border p-4">
+      <div class="flex items-center gap-4">
+        <!-- 左侧：搜索栏（占满空间） -->
+        <div class="relative flex-1">
+          <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          <input
+            v-model="searchKeyword"
+            @input="handleSearch"
+            type="text"
+            placeholder="搜索科室名称..."
+            class="w-full pl-10 pr-4 py-2 bg-background border border-input rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all"
+          />
         </div>
-        <div class="flex gap-3">
+
+        <!-- 右侧：操作按钮 -->
+        <div class="flex items-center gap-3">
           <button
             @click="showAddMajorDialog = true"
-            class="flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/80 transition-colors font-medium"
+            class="flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/80 transition-colors font-medium whitespace-nowrap"
           >
             <Plus class="w-4 h-4" />
             新增大科室
           </button>
           <button
             @click="showAddMinorDialog = true"
-            class="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium shadow-sm"
+            class="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium shadow-sm whitespace-nowrap"
           >
             <Plus class="w-4 h-4" />
             新增详细科室
           </button>
         </div>
       </div>
-
-      <!-- 搜索栏 -->
-      <div class="relative">
-        <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-        <input
-          v-model="searchKeyword"
-          @input="handleSearch"
-          type="text"
-          placeholder="搜索科室名称..."
-          class="w-full pl-10 pr-4 py-2.5 bg-background border border-input rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all"
-        />
-      </div>
     </div>
 
     <!-- 大科室导航栏 -->
     <div class="bg-card rounded-lg border border-border p-4">
       <div class="flex items-center gap-2 overflow-x-auto pb-2">
+        <!-- 编辑大科室按钮 -->
+        <button
+          @click="showEditMajorDialog = true"
+          class="px-4 py-2 rounded-md font-medium whitespace-nowrap transition-all duration-200 bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground flex items-center gap-2"
+          title="编辑大科室"
+        >
+          <Pencil class="w-4 h-4" />
+          编辑
+        </button>
+        <div class="w-px h-6 bg-border"></div>
         <button
           @click="selectedMajorId = null"
           :class="[
@@ -114,60 +121,82 @@
       </div>
     </div>
 
-    <!-- 分页器 -->
-    <div
-      v-if="totalPages > 1"
-      class="bg-card rounded-lg border border-border p-4 flex items-center justify-between"
-    >
-      <div class="text-sm text-muted-foreground">
-        共 <span class="font-semibold text-foreground">{{ filteredMinorDepartments.length }}</span> 个科室，
-        第 <span class="font-semibold text-foreground">{{ currentPage }}</span> / 
-        <span class="font-semibold text-foreground">{{ totalPages }}</span> 页
-      </div>
-      <div class="flex items-center gap-2">
-        <button
-          @click="currentPage = 1"
-          :disabled="currentPage === 1"
-          class="px-3 py-1.5 rounded-md border border-border text-foreground hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+    <!-- 分页器和每页显示数量控制 -->
+    <div class="bg-card rounded-lg border border-border p-4">
+      <div class="flex items-center justify-between">
+        <!-- 左侧：统计信息 -->
+        <div class="text-sm text-muted-foreground">
+          共 <span class="font-semibold text-foreground">{{ filteredMinorDepartments.length }}</span> 个科室
+          <template v-if="pageSize !== 'all'">
+            ，第 <span class="font-semibold text-foreground">{{ currentPage }}</span> / 
+            <span class="font-semibold text-foreground">{{ totalPages }}</span> 页
+          </template>
+        </div>
+
+        <!-- 中间：分页按钮 -->
+        <div
+          v-if="totalPages > 1 && pageSize !== 'all'"
+          class="flex items-center gap-2"
         >
-          首页
-        </button>
-        <button
-          @click="currentPage--"
-          :disabled="currentPage === 1"
-          class="px-3 py-1.5 rounded-md border border-border text-foreground hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          上一页
-        </button>
-        <div class="flex items-center gap-1">
           <button
-            v-for="page in visiblePages"
-            :key="page"
-            @click="currentPage = page"
-            :class="[
-              'px-3 py-1.5 rounded-md font-medium transition-all',
-              currentPage === page
-                ? 'bg-primary text-primary-foreground shadow-sm'
-                : 'border border-border text-foreground hover:bg-accent'
-            ]"
+            @click="currentPage = 1"
+            :disabled="currentPage === 1"
+            class="px-3 py-1.5 rounded-md border border-border text-foreground hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
           >
-            {{ page }}
+            首页
+          </button>
+          <button
+            @click="currentPage--"
+            :disabled="currentPage === 1"
+            class="px-3 py-1.5 rounded-md border border-border text-foreground hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+          >
+            上一页
+          </button>
+          <div class="flex items-center gap-1">
+            <button
+              v-for="page in visiblePages"
+              :key="page"
+              @click="currentPage = page"
+              :class="[
+                'px-3 py-1.5 rounded-md font-medium transition-all text-sm',
+                currentPage === page
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'border border-border text-foreground hover:bg-accent'
+              ]"
+            >
+              {{ page }}
+            </button>
+          </div>
+          <button
+            @click="currentPage++"
+            :disabled="currentPage === totalPages"
+            class="px-3 py-1.5 rounded-md border border-border text-foreground hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+          >
+            下一页
+          </button>
+          <button
+            @click="currentPage = totalPages"
+            :disabled="currentPage === totalPages"
+            class="px-3 py-1.5 rounded-md border border-border text-foreground hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+          >
+            末页
           </button>
         </div>
-        <button
-          @click="currentPage++"
-          :disabled="currentPage === totalPages"
-          class="px-3 py-1.5 rounded-md border border-border text-foreground hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          下一页
-        </button>
-        <button
-          @click="currentPage = totalPages"
-          :disabled="currentPage === totalPages"
-          class="px-3 py-1.5 rounded-md border border-border text-foreground hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          末页
-        </button>
+        <div v-else></div>
+
+        <!-- 右侧：每页显示数量选择器 -->
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-muted-foreground whitespace-nowrap">每页显示</span>
+          <select
+            v-model="pageSize"
+            @change="changePageSize(pageSize)"
+            class="px-3 py-1.5 bg-background border border-input rounded-md text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all cursor-pointer"
+          >
+            <option v-for="size in pageSizeOptions" :key="size" :value="size">
+              {{ size === 'all' ? '全部' : size }}
+            </option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -175,7 +204,7 @@
     <Teleport to="body">
       <div
         v-if="showDetailDialog"
-        class="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       >
       <div class="bg-card rounded-lg border border-border shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto m-4">
         <div class="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between">
@@ -301,12 +330,11 @@
       </div>
     </Teleport>
 
-    <!-- 新增大科室对话框 -->
+    <!-- 大科室对话框 -->
     <Teleport to="body">
       <div
       v-if="showAddMajorDialog"
-      class="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center"
-      @click.self="showAddMajorDialog = false"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
     >
       <div class="bg-card rounded-lg border border-border shadow-2xl max-w-md w-full m-4">
         <div class="p-6 border-b border-border flex items-center justify-between">
@@ -363,8 +391,7 @@
     <Teleport to="body">
       <div
         v-if="showAddMinorDialog"
-        class="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center"
-      @click.self="showAddMinorDialog = false"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
     >
       <div class="bg-card rounded-lg border border-border shadow-2xl max-w-md w-full m-4">
         <div class="p-6 border-b border-border flex items-center justify-between">
@@ -433,8 +460,7 @@
     <Teleport to="body">
       <div
         v-if="showDeleteDialog"
-        class="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center"
-      @click.self="showDeleteDialog = false"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
     >
       <div class="bg-card rounded-lg border border-border shadow-2xl max-w-md w-full m-4">
         <div class="p-6 border-b border-border">
@@ -470,6 +496,156 @@
       </div>
       </div>
     </Teleport>
+
+    <!-- 编辑大科室对话框 -->
+    <Teleport to="body">
+      <div
+        v-if="showEditMajorDialog"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      >
+        <div class="bg-card rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+          <!-- 标题栏 -->
+          <div class="px-6 py-4 border-b border-border flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-foreground">管理大科室</h2>
+            <button
+              @click="showEditMajorDialog = false"
+              class="p-1 hover:bg-accent rounded-md transition-colors"
+            >
+              <X class="w-5 h-5 text-muted-foreground" />
+            </button>
+          </div>
+
+          <!-- 内容区 -->
+          <div class="flex-1 overflow-y-auto px-6 py-4">
+            <div class="space-y-3">
+              <div
+                v-for="major in majorDepartments"
+                :key="major.major_dept_id"
+                class="border border-border rounded-lg p-4 hover:border-primary/50 transition-colors"
+              >
+                <!-- 编辑模式 -->
+                <div v-if="editingMajor?.major_dept_id === major.major_dept_id" class="space-y-3">
+                  <div>
+                    <label class="block text-sm font-medium text-foreground mb-1">大科室名称</label>
+                    <input
+                      v-model="editMajorForm.name"
+                      type="text"
+                      class="w-full px-3 py-2 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      placeholder="请输入大科室名称"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-foreground mb-1">描述</label>
+                    <textarea
+                      v-model="editMajorForm.description"
+                      rows="3"
+                      class="w-full px-3 py-2 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                      placeholder="请输入描述（可选）"
+                    ></textarea>
+                  </div>
+                  <div class="flex justify-end gap-2">
+                    <button
+                      @click="editingMajor = null"
+                      class="px-3 py-1.5 text-sm border border-border rounded-md hover:bg-accent transition-colors"
+                    >
+                      取消
+                    </button>
+                    <button
+                      @click="handleUpdateMajor"
+                      class="px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                    >
+                      保存
+                    </button>
+                  </div>
+                </div>
+
+                <!-- 查看模式 -->
+                <div v-else class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <h3 class="text-lg font-semibold text-foreground mb-1">{{ major.name }}</h3>
+                    <p class="text-sm text-muted-foreground">{{ major.description || '暂无描述' }}</p>
+                    <p class="text-xs text-muted-foreground mt-2">
+                      ID: {{ major.major_dept_id }} · 
+                      子科室: {{ minorDepartments.filter(d => d.major_dept_id === major.major_dept_id).length }}
+                    </p>
+                  </div>
+                  <div class="flex gap-2">
+                    <button
+                      @click="openEditMajor(major)"
+                      class="p-2 hover:bg-accent rounded-md transition-colors"
+                      title="编辑"
+                    >
+                      <Pencil class="w-4 h-4 text-muted-foreground" />
+                    </button>
+                    <button
+                      @click="openDeleteMajor(major)"
+                      class="p-2 hover:bg-destructive/10 rounded-md transition-colors"
+                      title="删除"
+                    >
+                      <Trash2 class="w-4 h-4 text-destructive" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 底部 -->
+          <div class="px-6 py-4 border-t border-border">
+            <button
+              @click="showEditMajorDialog = false"
+              class="w-full px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors font-medium"
+            >
+              关闭
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- 删除大科室确认对话框 -->
+    <Teleport to="body">
+      <div
+        v-if="showDeleteMajorDialog"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      >
+        <div class="bg-card rounded-lg shadow-xl max-w-md w-full p-6">
+          <div class="flex items-start gap-4">
+            <div class="p-3 bg-destructive/10 rounded-full">
+              <Trash2 class="w-6 h-6 text-destructive" />
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold text-foreground mb-2">
+                {{ deleteMajorHasChildren ? '无法删除大科室' : '确认删除大科室' }}
+              </h3>
+              <p class="text-sm text-muted-foreground mb-4">
+                <template v-if="deleteMajorHasChildren">
+                  大科室 <span class="font-semibold text-foreground">{{ deleteMajorName }}</span> 下还有子科室，无法删除。请先删除所有子科室后再试。
+                </template>
+                <template v-else>
+                  确定要删除大科室 <span class="font-semibold text-foreground">{{ deleteMajorName }}</span> 吗？此操作无法撤销。
+                </template>
+              </p>
+              <div class="flex justify-end gap-3">
+                <button
+                  @click="showDeleteMajorDialog = false"
+                  class="px-4 py-2 border border-border rounded-md hover:bg-accent transition-colors font-medium"
+                >
+                  {{ deleteMajorHasChildren ? '我知道了' : '取消' }}
+                </button>
+                <button
+                  v-if="!deleteMajorHasChildren"
+                  @click="handleDeleteMajor"
+                  class="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors font-medium"
+                >
+                  确认删除
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -501,13 +677,16 @@ const searchKeyword = ref('')
 
 // 分页状态
 const currentPage = ref(1)
-const pageSize = ref(9) // 每页显示9个（3x3网格）
+const pageSize = ref(12) // 每页显示数量
+const pageSizeOptions = [9, 12, 15, 18, 21, 'all']
 
 // 对话框状态
 const showDetailDialog = ref(false)
 const showAddMajorDialog = ref(false)
 const showAddMinorDialog = ref(false)
 const showDeleteDialog = ref(false)
+const showEditMajorDialog = ref(false)
+const showDeleteMajorDialog = ref(false)
 
 // 编辑状态
 const isEditing = ref(false)
@@ -529,6 +708,15 @@ const minorForm = ref({
   name: '',
   description: ''
 })
+
+// 编辑大科室
+const editingMajor = ref(null)
+const editMajorForm = ref({ name: '', description: '' })
+
+// 删除大科室
+const deleteMajorId = ref(null)
+const deleteMajorName = ref('')
+const deleteMajorHasChildren = ref(false)
 
 // 计算过滤后的科室列表
 const filteredMinorDepartments = computed(() => {
@@ -553,15 +741,28 @@ const filteredMinorDepartments = computed(() => {
 
 // 计算总页数
 const totalPages = computed(() => {
+  if (pageSize.value === 'all') return 1
   return Math.ceil(filteredMinorDepartments.value.length / pageSize.value)
 })
 
 // 计算当前页显示的科室
 const paginatedDepartments = computed(() => {
+  if (!filteredMinorDepartments.value || filteredMinorDepartments.value.length === 0) {
+    return []
+  }
+  if (pageSize.value === 'all') {
+    return filteredMinorDepartments.value
+  }
   const start = (currentPage.value - 1) * pageSize.value
   const end = start + pageSize.value
   return filteredMinorDepartments.value.slice(start, end)
 })
+
+// 修改每页显示数量
+const changePageSize = (size) => {
+  pageSize.value = size
+  currentPage.value = 1
+}
 
 // 计算可见的页码
 const visiblePages = computed(() => {
@@ -687,6 +888,52 @@ const handleAddMinor = () => {
       minorDepartments.value.push(response.data.message)
       showAddMinorDialog.value = false
       minorForm.value = { major_dept_id: null, name: '', description: '' }
+    })
+}
+
+// 编辑大科室
+const openEditMajor = (major) => {
+  editingMajor.value = major
+  editMajorForm.value = { name: major.name, description: major.description || '' }
+}
+
+const handleUpdateMajor = () => {
+  if (!editMajorForm.value.name.trim()) {
+    alert('请输入大科室名称')
+    return
+  }
+  console.log('更新大科室:', editingMajor.value.major_dept_id, editMajorForm.value)
+  departmentApi.updateMajorDepartment(editingMajor.value.major_dept_id, editMajorForm.value)
+    .then(() => {
+      const idx = majorDepartments.value.findIndex(m => m.major_dept_id === editingMajor.value.major_dept_id)
+      if (idx !== -1) {
+        majorDepartments.value[idx] = { 
+          ...majorDepartments.value[idx], 
+          ...editMajorForm.value 
+        }
+      }
+      editingMajor.value = null
+    })
+}
+
+// 删除大科室
+const openDeleteMajor = (major) => {
+  deleteMajorId.value = major.major_dept_id
+  deleteMajorName.value = major.name
+  // 检查是否有子科室
+  const hasChildren = minorDepartments.value.some(d => d.major_dept_id === major.major_dept_id)
+  deleteMajorHasChildren.value = hasChildren
+  showDeleteMajorDialog.value = true
+}
+
+const handleDeleteMajor = () => {
+  console.log('删除大科室:', deleteMajorId.value)
+  departmentApi.deleteMajorDepartment(deleteMajorId.value)
+    .then(() => {
+      majorDepartments.value = majorDepartments.value.filter(
+        m => m.major_dept_id !== deleteMajorId.value
+      )
+      showDeleteMajorDialog.value = false
     })
 }
 
