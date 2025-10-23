@@ -19,7 +19,7 @@
               <User class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <input
                 id="username"
-                v-model="form.username"
+                v-model="form.identifier"
                 type="text"
                 required
                 class="w-full pl-10 pr-4 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -81,7 +81,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 
 const form = ref({
-  username: '',
+  identifier: '',
   password: ''
 })
 
