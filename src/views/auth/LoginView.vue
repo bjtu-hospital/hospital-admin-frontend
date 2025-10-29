@@ -96,12 +96,21 @@ async function handleLogin() {
   try {
     const result = await authStore.login(form.value)
     
+    console.log('Login result:', result) // 调试日志
+    
     if (result.success) {
-      router.push('/')
+      // 等待一小会儿确保 store 已更新
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      console.log('Navigating to home, isAuthenticated:', authStore.isAuthenticated)
+      
+      // 使用 replace 而不是 push，避免可以返回到登录页
+      await router.replace('/')
     } else {
       error.value = result.error || '登录失败,请检查用户名和密码'
     }
   } catch (err) {
+    console.error('Login error:', err)
     error.value = '登录失败,请稍后重试'
   } finally {
     loading.value = false

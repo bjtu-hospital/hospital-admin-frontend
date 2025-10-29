@@ -11,7 +11,7 @@ const routes = [
   {
     path: "/",
     component: () => import("@/layouts/MainLayout.vue"),
-    meta: { requiresAuth: false },
+    meta: { requiresAuth: true },
     children: [
       {
         path: "",
@@ -80,11 +80,23 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
 
+  console.log('Route guard:', {
+    to: to.path,
+    from: from.path,
+    isAuthenticated: authStore.isAuthenticated,
+    token: authStore.token.value // 使用 .value 获取 ref 的实际值
+  })
+
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    // 需要认证但未登录，跳转到登录页
+    console.log('Not authenticated, redirecting to login')
     next("/login")
   } else if (to.path === "/login" && authStore.isAuthenticated) {
+    // 已登录但访问登录页，跳转到首页
+    console.log('Already authenticated, redirecting to home')
     next("/")
   } else {
+    // 允许访问
     next()
   }
 })

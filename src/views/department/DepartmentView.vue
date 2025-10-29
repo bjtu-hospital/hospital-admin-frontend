@@ -110,7 +110,7 @@
 
       <!-- 空状态 -->
       <div
-        v-if="filteredMinorDepartments.length === 0"
+        v-if="paginatedDepartments.length === 0"
         class="col-span-full flex flex-col items-center justify-center py-16 text-center"
       >
         <Building2 class="w-16 h-16 text-muted-foreground/50 mb-4" />
@@ -720,6 +720,10 @@ const deleteMajorHasChildren = ref(false)
 
 // 计算过滤后的科室列表
 const filteredMinorDepartments = computed(() => {
+  if (!minorDepartments.value || !Array.isArray(minorDepartments.value)) {
+    return []
+  }
+  
   let result = minorDepartments.value
 
   // 按大科室筛选
