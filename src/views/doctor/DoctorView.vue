@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4">
     <!-- 顶部操作栏 -->
-    <div class="bg-card rounded-lg border border-border p-4">
+    <div class="bg-card rounded-lg border border-border p-4 shadow-sm">
       <div class="flex items-center gap-4">
         <!-- 左侧：搜索栏 -->
         <div class="relative flex-1">
@@ -27,7 +27,7 @@
     </div>
 
     <!-- 科室筛选导航栏 -->
-    <div class="bg-card rounded-lg border border-border p-4">
+    <div class="bg-card rounded-lg border border-border p-4 shadow-sm">
       <div class="space-y-3">
         <!-- 大科室筛选 -->
         <div class="flex items-center gap-2 overflow-x-auto pb-2">
@@ -99,7 +99,7 @@
         v-for="doctor in paginatedDoctors"
         :key="doctor.doctor_id"
         @click="viewDoctorDetail(doctor)"
-        class="bg-card rounded-lg border border-border p-5 hover:border-primary/50 hover:shadow-md transition-all duration-200 cursor-pointer group"
+        class="bg-card rounded-lg border border-border p-5 shadow-sm hover:shadow-md hover:border-primary/50 transition-all duration-200 cursor-pointer group"
       >
         <div class="flex items-start gap-4 mb-3">
           <!-- 医生照片 -->
@@ -160,7 +160,7 @@
     </div>
 
     <!-- 分页器和每页显示数量控制 -->
-    <div class="bg-card rounded-lg border border-border p-4">
+    <div class="bg-card rounded-lg border border-border p-4 shadow-sm">
       <div class="flex items-center justify-between">
         <!-- 左侧：统计信息 -->
         <div class="text-sm text-muted-foreground">
@@ -243,7 +243,7 @@
       >
         <div class="bg-card rounded-lg border border-border shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto m-4">
           <!-- 标题栏 -->
-          <div class="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between">
+          <div class="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between z-10 shadow-sm">
             <div class="flex items-center gap-3">
               <div class="p-2 bg-primary/10 rounded-lg">
                 <Stethoscope class="w-6 h-6 text-primary" />
@@ -426,7 +426,7 @@
           </div>
 
           <!-- 底部操作按钮 -->
-          <div class="sticky bottom-0 bg-card border-t border-border p-6">
+          <div class="sticky bottom-0 bg-card border-t border-border p-6 shadow-sm z-10">
             <div v-if="!isEditing" class="flex flex-wrap items-center gap-3">
               <button
                 @click="confirmDelete"
@@ -495,7 +495,7 @@
         class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       >
         <div class="bg-card rounded-lg border border-border shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto m-4">
-          <div class="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between">
+          <div class="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between z-10 bg-muted/30">
             <h3 class="text-xl font-semibold text-foreground">新增医生</h3>
             <button
               @click="closeAddDoctorDialog"
@@ -623,17 +623,17 @@
             </div>
           </div>
 
-          <div class="sticky bottom-0 bg-card border-t border-border p-6 flex justify-end gap-3">
+          <div class="sticky bottom-0 bg-card border-t border-border p-6 flex justify-end gap-3 bg-muted/20">
             <button
               @click="closeAddDoctorDialog"
-              class="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/80 transition-colors font-medium"
+              class="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/80 transition-colors font-medium shadow-sm"
             >
               取消
             </button>
             <button
               @click="handleAddDoctor"
               :disabled="!isAddFormValid"
-              class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
             >
               确认添加
             </button>
@@ -649,7 +649,7 @@
         class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       >
         <div class="bg-card rounded-lg border border-border shadow-2xl max-w-md w-full m-4">
-          <div class="p-6 border-b border-border">
+          <div class="p-6 border-b border-border bg-muted/30">
             <div class="flex items-center gap-3">
               <div class="p-2 bg-destructive/10 rounded-lg">
                 <AlertCircle class="w-6 h-6 text-destructive" />
@@ -668,16 +668,16 @@
             <p class="text-sm text-muted-foreground mt-2">此操作无法撤销，请谨慎操作。</p>
           </div>
 
-          <div class="p-6 border-t border-border flex justify-end gap-3">
+          <div class="p-6 border-t border-border flex justify-end gap-3 bg-muted/20">
             <button
               @click="showDeleteDialog = false"
-              class="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/80 transition-colors font-medium"
+              class="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/80 transition-colors font-medium shadow-sm"
             >
               取消
             </button>
             <button
               @click="handleDelete"
-              class="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors font-medium"
+              class="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors font-medium shadow-sm"
             >
               确认删除
             </button>
@@ -693,7 +693,7 @@
         class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       >
         <div class="bg-card rounded-lg border border-border shadow-2xl max-w-md w-full m-4">
-          <div class="p-6 border-b border-border flex items-center justify-between">
+          <div class="p-6 border-b border-border flex items-center justify-between bg-muted/30">
             <h3 class="text-xl font-semibold text-foreground">调整科室</h3>
             <button
               @click="showTransferDialog = false"
@@ -729,17 +729,17 @@
             </div>
           </div>
 
-          <div class="p-6 border-t border-border flex justify-end gap-3">
+          <div class="p-6 border-t border-border flex justify-end gap-3 bg-muted/20">
             <button
               @click="showTransferDialog = false"
-              class="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/80 transition-colors font-medium"
+              class="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/80 transition-colors font-medium shadow-sm"
             >
               取消
             </button>
             <button
               @click="handleTransfer"
               :disabled="!transferForm.new_dept_id || transferForm.new_dept_id === selectedDoctor?.dept_id"
-              class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
             >
               确认调整
             </button>
@@ -755,7 +755,7 @@
         class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       >
         <div class="bg-card rounded-lg border border-border shadow-2xl max-w-md w-full m-4">
-          <div class="p-6 border-b border-border flex items-center justify-between">
+          <div class="p-6 border-b border-border flex items-center justify-between bg-muted/30">
             <h3 class="text-xl font-semibold text-foreground">
               {{ selectedDoctor?.is_registered ? '修改账号密码' : '注册账号' }}
             </h3>
@@ -806,17 +806,17 @@
             </div>
           </div>
 
-          <div class="p-6 border-t border-border flex justify-end gap-3">
+          <div class="p-6 border-t border-border flex justify-end gap-3 bg-muted/20">
             <button
               @click="showAccountDialog = false"
-              class="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/80 transition-colors font-medium"
+              class="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/80 transition-colors font-medium shadow-sm"
             >
               取消
             </button>
             <button
               @click="handleAccountOperation"
               :disabled="!accountForm.identifier || !accountForm.password"
-              class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
             >
               确认
             </button>
@@ -849,6 +849,28 @@ import {
 } from 'lucide-vue-next'
 import * as doctorApi from '@/api/doctor'
 import * as departmentApi from '@/api/department'
+import { useToast } from '@/utils/toast'
+
+const toast = useToast()
+
+// 提取错误信息的辅助函数
+const getErrorMessage = (error, defaultMsg = '操作失败') => {
+  // 如果有响应数据
+  if (error.response?.data) {
+    const data = error.response.data
+    // 检查是否有 message.msg 字符串
+    console.log(data.message?.msg)
+    if (data.message?.msg) {
+
+      return data.message.msg
+    }
+    // 检查是否有 message 字符串
+    if (typeof data.message === 'string') {
+      return data.message
+    }
+  }
+  return defaultMsg
+}
 
 onMounted(() => {
   loadData()
@@ -1108,18 +1130,22 @@ const cancelEdit = () => {
 const saveEdit = () => {
   console.log('保存编辑:', editForm.value)
   doctorApi.updateDoctor(selectedDoctor.value.doctor_id, editForm.value)
-    .then(() => {
+    .then(response => {
+      if (response.data.code !== 0) {
+        toast.error(response.data.message?.detail || response.data.message || '更新失败')
+        return
+      }
       const index = doctors.value.findIndex(d => d.doctor_id === selectedDoctor.value.doctor_id)
       if (index !== -1) {
         doctors.value[index] = { ...doctors.value[index], ...editForm.value }
       }
       selectedDoctor.value = { ...selectedDoctor.value, ...editForm.value }
       isEditing.value = false
-      alert('医生信息更新成功')
+      toast.success('医生信息更新成功')
     })
     .catch(error => {
       console.error('更新医生信息失败:', error)
-      alert('更新失败，请重试')
+      toast.error(getErrorMessage(error, '更新失败，请重试'))
     })
 }
 
@@ -1132,15 +1158,19 @@ const confirmDelete = () => {
 const handleDelete = () => {
   console.log('删除医生:', selectedDoctor.value.doctor_id)
   doctorApi.deleteDoctor(selectedDoctor.value.doctor_id)
-    .then(() => {
+    .then(response => {
+      if (response.data.code !== 0) {
+        toast.error(response.data.message?.detail || response.data.message || '删除失败')
+        return
+      }
       doctors.value = doctors.value.filter(d => d.doctor_id !== selectedDoctor.value.doctor_id)
       showDeleteDialog.value = false
       showDetailDialog.value = false
-      alert('医生删除成功')
+      toast.success('医生删除成功')
     })
     .catch(error => {
       console.error('删除医生失败:', error)
-      alert('删除失败，请重试')
+      toast.error(getErrorMessage(error, '删除失败，请重试'))
     })
 }
 
@@ -1158,19 +1188,28 @@ const handleAddDoctor = () => {
   if (createAccount.value) {
     submitData.identifier = addForm.value.identifier
     submitData.password = addForm.value.password
-    if (addForm.value.email) submitData.email = addForm.value.email
-    if (addForm.value.phonenumber) submitData.phonenumber = addForm.value.phonenumber
+    // 只在有值的情况下添加 email 和 phonenumber
+    if (addForm.value.email && addForm.value.email.trim()) {
+      submitData.email = addForm.value.email.trim()
+    }
+    if (addForm.value.phonenumber && addForm.value.phonenumber.trim()) {
+      submitData.phonenumber = addForm.value.phonenumber.trim()
+    }
   }
 
   doctorApi.createDoctor(submitData)
     .then(response => {
+      if (response.data.code !== 0) {
+        toast.error(response.data.message?.detail || response.data.message || '创建失败')
+        return
+      }
       loadDoctors()
       closeAddDoctorDialog()
-      alert(createAccount.value ? '医生信息和账号创建成功' : '医生信息创建成功')
+      toast.success(createAccount.value ? '医生信息和账号创建成功' : '医生信息创建成功')
     })
     .catch(error => {
       console.error('创建医生失败:', error)
-      alert('创建失败，请重试')
+      toast.error(getErrorMessage(error, '创建失败，请重试'))
     })
 }
 
@@ -1195,7 +1234,11 @@ const closeAddDoctorDialog = () => {
 const handleTransfer = () => {
   console.log('调整科室:', transferForm.value.new_dept_id)
   doctorApi.transferDoctor(selectedDoctor.value.doctor_id, transferForm.value.new_dept_id)
-    .then(() => {
+    .then(response => {
+      if (response.data.code !== 0) {
+        toast.error(response.data.message?.detail || response.data.message || '调整失败')
+        return
+      }
       const index = doctors.value.findIndex(d => d.doctor_id === selectedDoctor.value.doctor_id)
       if (index !== -1) {
         doctors.value[index].dept_id = transferForm.value.new_dept_id
@@ -1203,11 +1246,11 @@ const handleTransfer = () => {
       selectedDoctor.value.dept_id = transferForm.value.new_dept_id
       showTransferDialog.value = false
       transferForm.value.new_dept_id = null
-      alert('科室调整成功')
+      toast.success('科室调整成功')
     })
     .catch(error => {
       console.error('调整科室失败:', error)
-      alert('调整失败，请重试')
+      toast.error(getErrorMessage(error, '调整失败，请重试'))
     })
 }
 
@@ -1216,13 +1259,29 @@ const handleAccountOperation = () => {
   if (selectedDoctor.value.is_registered) {
     // TODO: 修改账号密码的API（如果有）
     console.log('修改账号密码:', accountForm.value)
-    alert('修改账号密码功能待实现')
+    toast.warning('修改账号密码功能待实现')
     showAccountDialog.value = false
   } else {
     // 创建账号
     console.log('创建账号:', accountForm.value)
-    doctorApi.createDoctorAccount(selectedDoctor.value.doctor_id, accountForm.value)
+    const submitData = {
+      identifier: accountForm.value.identifier,
+      password: accountForm.value.password
+    }
+    // 只在有值的情况下添加 email 和 phonenumber
+    if (accountForm.value.email && accountForm.value.email.trim()) {
+      submitData.email = accountForm.value.email.trim()
+    }
+    if (accountForm.value.phonenumber && accountForm.value.phonenumber.trim()) {
+      submitData.phonenumber = accountForm.value.phonenumber.trim()
+    }
+    
+    doctorApi.createDoctorAccount(selectedDoctor.value.doctor_id, submitData)
       .then(response => {
+        if (response.data.code !== 0) {
+          toast.error(response.data.message?.detail || response.data.message || '创建账号失败')
+          return
+        }
         selectedDoctor.value.is_registered = true
         selectedDoctor.value.user_id = response.data.message.user_id
         const index = doctors.value.findIndex(d => d.doctor_id === selectedDoctor.value.doctor_id)
@@ -1237,11 +1296,11 @@ const handleAccountOperation = () => {
           email: '',
           phonenumber: ''
         }
-        alert('账号创建成功')
+        toast.success('账号创建成功')
       })
       .catch(error => {
         console.error('创建账号失败:', error)
-        alert('创建账号失败，请重试')
+        toast.error(getErrorMessage(error, '创建账号失败，请重试'))
       })
   }
 }
@@ -1262,17 +1321,21 @@ const handlePhotoUpload = (event) => {
   console.log('上传照片:', file.name)
   doctorApi.uploadDoctorPhoto(selectedDoctor.value.doctor_id, formData)
     .then(response => {
+      if (response.data.code !== 0) {
+        toast.error(response.data.message?.detail || response.data.message || '上传失败')
+        return
+      }
       const photoUrl = response.data.message.photo_url
       selectedDoctor.value.original_photo_url = photoUrl
       const index = doctors.value.findIndex(d => d.doctor_id === selectedDoctor.value.doctor_id)
       if (index !== -1) {
         doctors.value[index].original_photo_url = photoUrl
       }
-      alert('照片上传成功')
+      toast.success('照片上传成功')
     })
     .catch(error => {
       console.error('上传照片失败:', error)
-      alert('上传失败，请重试')
+      toast.error(getErrorMessage(error, '上传失败，请重试'))
     })
     .finally(() => {
       event.target.value = ''
@@ -1285,17 +1348,21 @@ const confirmDeletePhoto = () => {
 
   console.log('删除照片')
   doctorApi.deleteDoctorPhoto(selectedDoctor.value.doctor_id)
-    .then(() => {
+    .then(response => {
+      if (response.data.code !== 0) {
+        toast.error(response.data.message?.detail || response.data.message || '删除失败')
+        return
+      }
       selectedDoctor.value.original_photo_url = null
       const index = doctors.value.findIndex(d => d.doctor_id === selectedDoctor.value.doctor_id)
       if (index !== -1) {
         doctors.value[index].original_photo_url = null
       }
-      alert('照片删除成功')
+      toast.success('照片删除成功')
     })
     .catch(error => {
       console.error('删除照片失败:', error)
-      alert('删除失败，请重试')
+      toast.error(getErrorMessage(error, '删除失败，请重试'))
     })
 }
 
@@ -1308,6 +1375,10 @@ watch([selectedMajorId, selectedMinorId, searchKeyword], () => {
 const loadDoctors = (deptId = '') => {
   doctorApi.getDoctors(deptId)
     .then(response => {
+      if (response.data.code !== 0) {
+        toast.error(response.data.message?.detail || response.data.message || '加载医生列表失败')
+        return
+      }
       doctors.value = response.data.message.doctors.map(doctor => ({
         ...doctor,
         is_registered: doctor.is_registered ?? false
@@ -1315,6 +1386,7 @@ const loadDoctors = (deptId = '') => {
     })
     .catch(error => {
       console.error('加载医生列表失败:', error)
+      toast.error(getErrorMessage(error, '加载医生列表失败'))
     })
 }
 
@@ -1323,19 +1395,29 @@ const loadData = () => {
   // 加载大科室
   departmentApi.getMajorDepartments()
     .then(response => {
+      if (response.data.code !== 0) {
+        toast.error(response.data.message?.detail || response.data.message || '加载大科室失败')
+        return
+      }
       majorDepartments.value = response.data.message.departments
     })
     .catch(error => {
       console.error('加载大科室失败:', error)
+      toast.error(getErrorMessage(error, '加载大科室失败'))
     })
 
   // 加载小科室
   departmentApi.getMinorDepartment()
     .then(response => {
+      if (response.data.code !== 0) {
+        toast.error(response.data.message?.detail || response.data.message || '加载小科室失败')
+        return
+      }
       minorDepartments.value = response.data.message.departments
     })
     .catch(error => {
       console.error('加载小科室失败:', error)
+      toast.error(getErrorMessage(error, '加载小科室失败'))
     })
 
   // 加载医生列表

@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4">
     <!-- 顶部操作栏 -->
-    <div class="bg-card rounded-lg border border-border p-4">
+    <div class="bg-card rounded-lg border border-border p-4 shadow-sm">
       <div class="flex items-center gap-4">
         <!-- 左侧：搜索栏（占满空间） -->
         <div class="relative flex-1">
@@ -36,7 +36,7 @@
     </div>
 
     <!-- 大科室导航栏 -->
-    <div class="bg-card rounded-lg border border-border p-4">
+    <div class="bg-card rounded-lg border border-border p-4 shadow-sm">
       <div class="flex items-center gap-2 overflow-x-auto pb-2">
         <!-- 编辑大科室按钮 -->
         <button
@@ -85,7 +85,7 @@
         v-for="dept in paginatedDepartments"
         :key="dept.minor_dept_id"
         @click="viewDepartmentDetail(dept)"
-        class="bg-card rounded-lg border border-border p-5 hover:border-primary/50 hover:shadow-md transition-all duration-200 cursor-pointer group"
+        class="bg-card rounded-lg border border-border p-5 shadow-sm hover:shadow-md hover:border-primary/50 transition-all duration-200 cursor-pointer group"
       >
         <div class="flex items-start justify-between mb-3">
           <div class="flex items-center gap-3">
@@ -122,7 +122,7 @@
     </div>
 
     <!-- 分页器和每页显示数量控制 -->
-    <div class="bg-card rounded-lg border border-border p-4">
+    <div class="bg-card rounded-lg border border-border p-4 shadow-sm">
       <div class="flex items-center justify-between">
         <!-- 左侧：统计信息 -->
         <div class="text-sm text-muted-foreground">
@@ -207,7 +207,7 @@
         class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       >
       <div class="bg-card rounded-lg border border-border shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto m-4">
-        <div class="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between">
+        <div class="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between z-10 shadow-sm">
           <div class="flex items-center gap-3">
             <div class="p-2 bg-primary/10 rounded-lg">
               <Building2 class="w-6 h-6 text-primary" />
@@ -289,7 +289,7 @@
         </div>
 
         <!-- 底部操作按钮 -->
-        <div class="sticky bottom-0 bg-card border-t border-border p-6 flex items-center justify-between">
+        <div class="sticky bottom-0 bg-card border-t border-border p-6 flex items-center justify-between shadow-sm z-10">
           <button
             v-if="!isEditing"
             @click="confirmDelete"
@@ -337,7 +337,7 @@
       class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
     >
       <div class="bg-card rounded-lg border border-border shadow-2xl max-w-md w-full m-4">
-        <div class="p-6 border-b border-border flex items-center justify-between">
+        <div class="p-6 border-b border-border flex items-center justify-between bg-muted/30">
           <h3 class="text-xl font-semibold text-foreground">新增大科室</h3>
           <button
             @click="showAddMajorDialog = false"
@@ -368,17 +368,17 @@
           </div>
         </div>
 
-        <div class="p-6 border-t border-border flex justify-end gap-3">
+        <div class="p-6 border-t border-border flex justify-end gap-3 bg-muted/20">
           <button
             @click="showAddMajorDialog = false"
-            class="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/80 transition-colors font-medium"
+            class="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/80 transition-colors font-medium shadow-sm"
           >
             取消
           </button>
           <button
             @click="handleAddMajor"
             :disabled="!majorForm.name"
-            class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
             确认添加
           </button>
@@ -394,7 +394,7 @@
         class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
     >
       <div class="bg-card rounded-lg border border-border shadow-2xl max-w-md w-full m-4">
-        <div class="p-6 border-b border-border flex items-center justify-between">
+        <div class="p-6 border-b border-border flex items-center justify-between bg-muted/30">
           <h3 class="text-xl font-semibold text-foreground">新增详细科室</h3>
           <button
             @click="showAddMinorDialog = false"
@@ -437,17 +437,17 @@
           </div>
         </div>
 
-        <div class="p-6 border-t border-border flex justify-end gap-3">
+        <div class="p-6 border-t border-border flex justify-end gap-3 bg-muted/20">
           <button
             @click="showAddMinorDialog = false"
-            class="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/80 transition-colors font-medium"
+            class="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/80 transition-colors font-medium shadow-sm"
           >
             取消
           </button>
           <button
             @click="handleAddMinor"
             :disabled="!minorForm.name || !minorForm.major_dept_id"
-            class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
             确认添加
           </button>
@@ -463,7 +463,7 @@
         class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
     >
       <div class="bg-card rounded-lg border border-border shadow-2xl max-w-md w-full m-4">
-        <div class="p-6 border-b border-border">
+        <div class="p-6 border-b border-border bg-muted/30">
           <div class="flex items-center gap-3">
             <div class="p-2 bg-destructive/10 rounded-lg">
               <AlertCircle class="w-6 h-6 text-destructive" />
@@ -479,16 +479,16 @@
           <p class="text-sm text-muted-foreground mt-2">此操作无法撤销，请谨慎操作。</p>
         </div>
 
-        <div class="p-6 border-t border-border flex justify-end gap-3">
+        <div class="p-6 border-t border-border flex justify-end gap-3 bg-muted/20">
           <button
             @click="showDeleteDialog = false"
-            class="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/80 transition-colors font-medium"
+            class="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/80 transition-colors font-medium shadow-sm"
           >
             取消
           </button>
           <button
             @click="handleDelete"
-            class="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors font-medium"
+            class="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors font-medium shadow-sm"
           >
             确认删除
           </button>
@@ -503,9 +503,9 @@
         v-if="showEditMajorDialog"
         class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       >
-        <div class="bg-card rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="bg-card rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-border">
           <!-- 标题栏 -->
-          <div class="px-6 py-4 border-b border-border flex items-center justify-between">
+          <div class="px-6 py-4 border-b border-border flex items-center justify-between bg-muted/30">
             <h2 class="text-xl font-semibold text-foreground">管理大科室</h2>
             <button
               @click="showEditMajorDialog = false"
@@ -521,7 +521,7 @@
               <div
                 v-for="major in majorDepartments"
                 :key="major.major_dept_id"
-                class="border border-border rounded-lg p-4 hover:border-primary/50 transition-colors"
+                class="border border-border rounded-lg p-4 hover:border-primary/50 transition-colors bg-card shadow-sm hover:shadow-md"
               >
                 <!-- 编辑模式 -->
                 <div v-if="editingMajor?.major_dept_id === major.major_dept_id" class="space-y-3">
@@ -591,10 +591,10 @@
           </div>
 
           <!-- 底部 -->
-          <div class="px-6 py-4 border-t border-border">
+          <div class="px-6 py-4 border-t border-border bg-muted/20">
             <button
               @click="showEditMajorDialog = false"
-              class="w-full px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors font-medium"
+              class="w-full px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors font-medium shadow-sm"
             >
               关闭
             </button>
