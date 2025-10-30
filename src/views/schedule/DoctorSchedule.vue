@@ -7,6 +7,33 @@
         <span v-if="selectedDoctor" class="text-primary">- {{ selectedDoctor.name }}</span>
       </h3>
       <div v-if="selectedDoctor" class="flex items-center gap-2">
+        <!-- 视图切换按钮 -->
+        <div class="flex items-center gap-1 border border-border rounded-md p-0.5">
+          <button
+            @click="viewMode = 'list'"
+            :class="[
+              'px-3 py-1.5 rounded text-sm font-medium transition-colors flex items-center gap-1',
+              viewMode === 'list'
+                ? 'bg-primary/10 text-primary'
+                : 'text-muted-foreground hover:text-foreground'
+            ]"
+          >
+            <List class="w-4 h-4" />
+            列表
+          </button>
+          <button
+            @click="viewMode = 'calendar'"
+            :class="[
+              'px-3 py-1.5 rounded text-sm font-medium transition-colors flex items-center gap-1',
+              viewMode === 'calendar'
+                ? 'bg-primary/10 text-primary'
+                : 'text-muted-foreground hover:text-foreground'
+            ]"
+          >
+            <CalendarDays class="w-4 h-4" />
+            月历
+          </button>
+        </div>
         <button
           @click="openAddDialog"
           class="flex items-center gap-2 px-3 py-2 bg-primary/10 text-primary border border-primary/30 rounded-md hover:bg-primary/20 hover:border-primary/50 transition-colors text-sm shadow-sm font-medium"
@@ -18,7 +45,8 @@
     </div>
 
     <div v-if="selectedDoctor">
-      <div v-if="schedules.length > 0" class="overflow-x-auto">
+      <!-- 列表视图 -->
+      <div v-if="viewMode === 'list' && schedules.length > 0" class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
             <tr class="border-b border-border">
@@ -94,34 +122,223 @@
         </table>
       </div>
 
-      <div v-else class="text-center py-12 text-muted-foreground">
-        <Calendar class="w-12 h-12 mx-auto mb-2 opacity-50" />
-        <p>该医生暂无排班数据</p>
+      <!-- 月历视图 -->
+      <div v-if="viewMode === 'calendar' && schedules.length > 0" class="space-y-4">
+        <!-- 周导航 -->
+        <div class="flex items-center justify-between bg-accent/30 p-3 rounded-lg">
+          <button
+            @click="previousWeek"
+            :disabled="currentWeekIndex === 0"
+            class="flex items-center gap-1 px-3 py-1.5 rounded-md bg-background border border-border hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+          >
+            <ChevronLeft class="w-4 h-4" />
+            上一周
+          </button>
+          <div class="text-sm font-medium text-foreground">
+            第 {{ currentWeekIndex + 1 }} 周 / 共 {{ totalWeeks }} 周
+            <span class="text-xs text-muted-foreground ml-2">
+              ({{ currentWeekDates[0]?.day }} - {{ currentWeekDates[currentWeekDates.length - 1]?.day }})
+            </span>
+          </div>
+          <button
+            @click="nextWeek"
+            :disabled="currentWeekIndex >= totalWeeks - 1"
+            class="flex items-center gap-1 px-3 py-1.5 rounded-md bg-background border border-border hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+          >
+            下一周
+            <ChevronRight class="w-4 h-4" />
+          </button>
+        </div>
+
+        <!-- 日历表格 -->
+        <div class="overflow-x-auto">
+          <div class="min-w-[800px]">
+            <!-- 日期表头 -->
+            <div class="grid grid-cols-8 gap-1 mb-2">
+              <div class="font-semibold text-sm text-muted-foreground p-2">日期/时段</div>
+              <div 
+                v-for="date in currentWeekDates" 
+                :key="date.dateStr"
+                :class="[
+                  'text-center p-2 rounded',
+                  isToday(date.dateStr) ? 'bg-primary/20 border-2 border-primary' : 'bg-accent/30'
+                ]"
+              >
+                <div class="text-xs font-semibold text-foreground">{{ date.day }}</div>
+                <div class="text-xs text-muted-foreground">{{ date.weekDay }}</div>
+              </div>
+            </div>
+
+            <!-- 上午 -->
+            <div class="grid grid-cols-8 gap-1 mb-1">
+              <div class="p-2 bg-accent/20 rounded font-medium text-sm flex items-center">
+                <Sunrise class="w-4 h-4 mr-1 text-orange-500" />
+                上午
+              </div>
+              <div 
+                v-for="date in currentWeekDates" 
+                :key="`morning-${date.dateStr}`"
+                class="p-1.5 border border-border rounded min-h-[70px] bg-card hover:bg-accent/50 transition-colors"
+              >
+                <div 
+                  v-for="schedule in getSchedulesByDateAndTime(date.dateStr, '上午')"
+                  :key="schedule.schedule_id"
+                  :class="[
+                    'mb-1 p-1 rounded text-xs cursor-pointer transition-all',
+                    schedule.status === '停诊'
+                      ? 'bg-red-500/10 text-red-600 line-through'
+                      : schedule.slot_type === '特需'
+                      ? 'bg-orange-500/10 text-orange-600 hover:bg-orange-500/20'
+                      : schedule.slot_type === '专家'
+                      ? 'bg-blue-500/10 text-blue-600 hover:bg-blue-500/20'
+                      : 'bg-gray-500/10 text-gray-600 hover:bg-gray-500/20'
+                  ]"
+                  @click="openEditDialog(schedule)"
+                  :title="`${schedule.clinic_name} - ${schedule.slot_type} - ¥${schedule.price}`"
+                >
+                  <div class="font-medium truncate">{{ schedule.slot_type }}</div>
+                  <div class="text-[10px] opacity-75 truncate">{{ schedule.clinic_name.substring(0, 5) }}</div>
+                  <div class="text-[10px]">¥{{ schedule.price }}</div>
+                </div>
+                <div v-if="getSchedulesByDateAndTime(date.dateStr, '上午').length === 0" class="text-xs text-muted-foreground/50 text-center py-4">
+                  -
+                </div>
+              </div>
+            </div>
+
+            <!-- 下午 -->
+            <div class="grid grid-cols-8 gap-1 mb-1">
+              <div class="p-2 bg-accent/20 rounded font-medium text-sm flex items-center">
+                <Sun class="w-4 h-4 mr-1 text-yellow-500" />
+                下午
+              </div>
+              <div 
+                v-for="date in currentWeekDates" 
+                :key="`afternoon-${date.dateStr}`"
+                class="p-1.5 border border-border rounded min-h-[70px] bg-card hover:bg-accent/50 transition-colors"
+              >
+                <div 
+                  v-for="schedule in getSchedulesByDateAndTime(date.dateStr, '下午')"
+                  :key="schedule.schedule_id"
+                  :class="[
+                    'mb-1 p-1 rounded text-xs cursor-pointer transition-all',
+                    schedule.status === '停诊'
+                      ? 'bg-red-500/10 text-red-600 line-through'
+                      : schedule.slot_type === '特需'
+                      ? 'bg-orange-500/10 text-orange-600 hover:bg-orange-500/20'
+                      : schedule.slot_type === '专家'
+                      ? 'bg-blue-500/10 text-blue-600 hover:bg-blue-500/20'
+                      : 'bg-gray-500/10 text-gray-600 hover:bg-gray-500/20'
+                  ]"
+                  @click="openEditDialog(schedule)"
+                  :title="`${schedule.clinic_name} - ${schedule.slot_type} - ¥${schedule.price}`"
+                >
+                  <div class="font-medium truncate">{{ schedule.slot_type }}</div>
+                  <div class="text-[10px] opacity-75 truncate">{{ schedule.clinic_name.substring(0, 5) }}</div>
+                  <div class="text-[10px]">¥{{ schedule.price }}</div>
+                </div>
+                <div v-if="getSchedulesByDateAndTime(date.dateStr, '下午').length === 0" class="text-xs text-muted-foreground/50 text-center py-4">
+                  -
+                </div>
+              </div>
+            </div>
+
+            <!-- 晚上 -->
+            <div class="grid grid-cols-8 gap-1">
+              <div class="p-2 bg-accent/20 rounded font-medium text-sm flex items-center">
+                <Moon class="w-4 h-4 mr-1 text-blue-500" />
+                晚上
+              </div>
+              <div 
+                v-for="date in currentWeekDates" 
+                :key="`evening-${date.dateStr}`"
+                class="p-1.5 border border-border rounded min-h-[70px] bg-card hover:bg-accent/50 transition-colors"
+              >
+                <div 
+                  v-for="schedule in getSchedulesByDateAndTime(date.dateStr, '晚上')"
+                  :key="schedule.schedule_id"
+                  :class="[
+                    'mb-1 p-1 rounded text-xs cursor-pointer transition-all',
+                    schedule.status === '停诊'
+                      ? 'bg-red-500/10 text-red-600 line-through'
+                      : schedule.slot_type === '特需'
+                      ? 'bg-orange-500/10 text-orange-600 hover:bg-orange-500/20'
+                      : schedule.slot_type === '专家'
+                      ? 'bg-blue-500/10 text-blue-600 hover:bg-blue-500/20'
+                      : 'bg-gray-500/10 text-gray-600 hover:bg-gray-500/20'
+                  ]"
+                  @click="openEditDialog(schedule)"
+                  :title="`${schedule.clinic_name} - ${schedule.slot_type} - ¥${schedule.price}`"
+                >
+                  <div class="font-medium truncate">{{ schedule.slot_type }}</div>
+                  <div class="text-[10px] opacity-75 truncate">{{ schedule.clinic_name.substring(0, 5) }}</div>
+                  <div class="text-[10px]">¥{{ schedule.price }}</div>
+                </div>
+                <div v-if="getSchedulesByDateAndTime(date.dateStr, '晚上').length === 0" class="text-xs text-muted-foreground/50 text-center py-4">
+                  -
+                </div>
+              </div>
+            </div>
+
+            <!-- 图例和说明 -->
+            <div class="mt-4 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-4 text-muted-foreground">
+                <div class="flex items-center gap-1">
+                  <div class="w-3 h-3 rounded bg-gray-500/10"></div>
+                  <span>普通</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <div class="w-3 h-3 rounded bg-blue-500/10"></div>
+                  <span>专家</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <div class="w-3 h-3 rounded bg-orange-500/10"></div>
+                  <span>特需</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <div class="w-3 h-3 rounded bg-red-500/10"></div>
+                  <span>停诊</span>
+                </div>
+              </div>
+              <span class="text-muted-foreground">
+                <span class="font-medium text-foreground">提示：</span>
+                点击排班卡片可编辑 | 使用左右按钮切换周
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <div v-else class="text-center py-12 text-muted-foreground">
-      <UserCircle class="w-12 h-12 mx-auto mb-2 opacity-50" />
-      <p>请选择医生查看排班数据</p>
+    <!-- 空状态 -->
+    <div v-if="schedules.length === 0" class="text-center py-12 text-muted-foreground">
+      <Calendar class="w-12 h-12 mx-auto mb-2 opacity-50" />
+      <p>该医生暂无排班数据</p>
     </div>
+  </div>
 
-    <!-- 排班对话框 -->
-    <ScheduleDialog
-      v-if="showScheduleDialog"
-      :visible="showScheduleDialog"
-      :schedule="editingSchedule"
-      :doctor="selectedDoctor"
-      :dept-id="deptId"
-      :clinics="clinics"
-      @close="showScheduleDialog = false"
-      @success="handleScheduleSuccess"
-    />
+  <!-- 未选择医生 -->
+  <div v-if="!selectedDoctor" class="text-center py-12 text-muted-foreground">
+    <UserCircle class="w-12 h-12 mx-auto mb-2 opacity-50" />
+    <p>请选择医生查看排班数据</p>
+  </div>
+
+  <!-- 排班对话框 -->
+  <ScheduleDialog
+    v-if="showScheduleDialog"
+    :visible="showScheduleDialog"
+    :schedule="editingSchedule"
+    :doctor="selectedDoctor"
+    :dept-id="deptId"
+    :clinics="clinics"
+    @close="showScheduleDialog = false"
+    @success="handleScheduleSuccess"
+  />
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import { UserCircle, Plus, Calendar, Pencil, Trash2 } from 'lucide-vue-next'
+import { ref, watch, computed } from 'vue'
+import { UserCircle, Plus, Calendar, Pencil, Trash2, List, CalendarDays, Sunrise, Sun, Moon, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import * as scheduleApi from '@/api/schedule'
 import { useToast } from '@/utils/toast'
 import ScheduleDialog from './ScheduleDialog.vue'
@@ -145,6 +362,71 @@ const schedules = ref([])
 const clinics = ref([])
 const showScheduleDialog = ref(false)
 const editingSchedule = ref(null)
+const viewMode = ref('list') // 'list' 或 'calendar'
+const currentWeekIndex = ref(0) // 当前显示的周索引
+
+// 获取所有日期并分组为周
+const allCalendarDates = computed(() => {
+  if (schedules.value.length === 0) return []
+  
+  // 获取所有排班日期并排序
+  const allDates = [...new Set(schedules.value.map(s => s.date))].sort()
+  
+  return allDates.map(dateStr => {
+    const date = new Date(dateStr)
+    const weekDays = ['日', '一', '二', '三', '四', '五', '六']
+    return {
+      dateStr,
+      day: `${date.getMonth() + 1}/${date.getDate()}`,
+      weekDay: `周${weekDays[date.getDay()]}`
+    }
+  })
+})
+
+// 计算总周数（每周7天）
+const totalWeeks = computed(() => {
+  return Math.ceil(allCalendarDates.value.length / 7)
+})
+
+// 获取当前周的日期
+const currentWeekDates = computed(() => {
+  const start = currentWeekIndex.value * 7
+  const end = start + 7
+  return allCalendarDates.value.slice(start, end)
+})
+
+// 上一周
+const previousWeek = () => {
+  if (currentWeekIndex.value > 0) {
+    currentWeekIndex.value--
+  }
+}
+
+// 下一周
+const nextWeek = () => {
+  if (currentWeekIndex.value < totalWeeks.value - 1) {
+    currentWeekIndex.value++
+  }
+}
+
+// 判断是否是今天
+const isToday = (dateStr) => {
+  const today = new Date('2025-10-31')
+  const todayStr = today.toISOString().split('T')[0]
+  return dateStr === todayStr
+}
+
+// 根据日期和时段获取排班
+const getSchedulesByDateAndTime = (date, timeSection) => {
+  return schedules.value.filter(s => s.date === date && s.time_section === timeSection)
+}
+
+// 切换视图时重置到第一周
+watch(viewMode, (newMode) => {
+  if (newMode === 'calendar') {
+    currentWeekIndex.value = 0
+  }
+})
 
 const loadSchedules = async () => {
   if (!props.selectedDoctor) {
