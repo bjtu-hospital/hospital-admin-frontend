@@ -280,7 +280,6 @@
                     class="w-24 h-24 rounded-full object-cover"
                     @error="handlePhotoError($event, selectedDoctor)"
                   />
-                  />
                   <div v-if="!isEditing" class="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                     <button
                       @click="triggerPhotoUpload"
@@ -890,21 +889,84 @@ const getDoctorPhotoUrl = (doctor) => {
   // 如果已标记照片加载失败，返回 null 显示默认头像
   if (doctor._photoError) return null
   
-  // 如果有 doctor_id，优先使用 API 接口
-  if (doctor.doctor_id) {
-    return `http://localhost:8000/admin/doctors/${doctor.doctor_id}/photo`
+  // 如果已经有缓存的 blob URL，直接返回
+  if (doctor._photoBlobUrl) return doctor._photoBlobUrl
+  
+  // 如果有 doctor_id，通过 axios 获取图片（会自动添加 token）
+  if (doctor.doctor_id && !doctor._photoLoading) {
+    doctor._photoLoading = true
+    fetchDoctorPhoto(doctor)
+    // 暂时返回 null，显示默认头像，等待图片加载完成
+    return null
   }
   
-  // 否则使用备用的绝对URL
+  // 否则使用备用的绝对URL（外部URL不需要token）
   return doctor.original_photo_url || null
+}
+
+// 通过 axios 获取医生照片并转换为 blob URL
+const fetchDoctorPhoto = async (doctor) => {
+  try {
+    const response = await doctorApi.getDoctorPhoto(doctor.doctor_id)
+    
+    // 创建 blob URL
+    const blob = new Blob([response.data], { type: response.headers['content-type'] || 'image/jpeg' })
+    const blobUrl = URL.createObjectURL(blob)
+    
+    // 缓存 blob URL
+    doctor._photoBlobUrl = blobUrl
+    doctor._photoLoading = false
+    
+    // 更新列表中的医生
+    const index = doctors.value.findIndex(d => d.doctor_id === doctor.doctor_id)
+    if (index !== -1) {
+      doctors.value[index]._photoBlobUrl = blobUrl
+      doctors.value[index]._photoLoading = false
+    }
+    
+    // 如果是当前选中的医生，触发更新
+    if (selectedDoctor.value?.doctor_id === doctor.doctor_id) {
+      selectedDoctor.value = { ...selectedDoctor.value, _photoBlobUrl: blobUrl, _photoLoading: false }
+    }
+  } catch (error) {
+    console.error('获取医生照片失败:', error)
+    doctor._photoLoading = false
+    
+    // 如果有备用URL，标记使用备用
+    if (doctor.original_photo_url) {
+      // 不标记错误，让它尝试使用备用URL
+      doctor._photoBlobUrl = doctor.original_photo_url
+      
+      const index = doctors.value.findIndex(d => d.doctor_id === doctor.doctor_id)
+      if (index !== -1) {
+        doctors.value[index]._photoBlobUrl = doctor.original_photo_url
+      }
+      
+      if (selectedDoctor.value?.doctor_id === doctor.doctor_id) {
+        selectedDoctor.value = { ...selectedDoctor.value, _photoBlobUrl: doctor.original_photo_url }
+      }
+    } else {
+      // 没有备用URL，标记加载失败
+      doctor._photoError = true
+      
+      const index = doctors.value.findIndex(d => d.doctor_id === doctor.doctor_id)
+      if (index !== -1) {
+        doctors.value[index]._photoError = true
+      }
+      
+      if (selectedDoctor.value?.doctor_id === doctor.doctor_id) {
+        selectedDoctor.value = { ...selectedDoctor.value, _photoError: true }
+      }
+    }
+  }
 }
 
 // 处理照片加载错误 - 切换到备用URL或显示默认头像
 const handlePhotoError = (event, doctor) => {
   const img = event.target
   
-  // 如果当前使用的是API URL，切换到备用URL
-  if (img.src.includes('/admin/doctors/') && doctor.original_photo_url) {
+  // 如果当前使用的是blob URL或API URL，尝试切换到备用URL
+  if (doctor.original_photo_url && img.src !== doctor.original_photo_url) {
     img.src = doctor.original_photo_url
   } else {
     // 如果备用URL也失败或没有备用URL，标记为失败并显示默认头像
@@ -912,6 +974,42 @@ const handlePhotoError = (event, doctor) => {
     // 触发重新渲染
     if (selectedDoctor.value?.doctor_id === doctor.doctor_id) {
       selectedDoctor.value = { ...selectedDoctor.value, _photoError: true }
+    }
+  }
+}
+
+// 清除医生照片缓存，触发重新加载
+const refreshDoctorPhoto = (doctorId) => {
+  // 查找医生列表中的医生
+  const index = doctors.value.findIndex(d => d.doctor_id === doctorId)
+  if (index !== -1) {
+    const doctor = doctors.value[index]
+    
+    // 清理旧的 blob URL（避免内存泄漏）
+    if (doctor._photoBlobUrl && doctor._photoBlobUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(doctor._photoBlobUrl)
+    }
+    
+    // 清除缓存标记
+    delete doctor._photoBlobUrl
+    delete doctor._photoLoading
+    delete doctor._photoError
+    
+    // 强制更新列表
+    doctors.value[index] = { ...doctor }
+  }
+  
+  // 如果是当前选中的医生，也清除它的缓存
+  if (selectedDoctor.value?.doctor_id === doctorId) {
+    if (selectedDoctor.value._photoBlobUrl && selectedDoctor.value._photoBlobUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(selectedDoctor.value._photoBlobUrl)
+    }
+    
+    selectedDoctor.value = {
+      ...selectedDoctor.value,
+      _photoBlobUrl: undefined,
+      _photoLoading: undefined,
+      _photoError: undefined
     }
   }
 }
@@ -1372,11 +1470,17 @@ const handlePhotoUpload = (event) => {
         return
       }
       const photoUrl = response.data.message.photo_url
+      
+      // 更新 original_photo_url
       selectedDoctor.value.original_photo_url = photoUrl
       const index = doctors.value.findIndex(d => d.doctor_id === selectedDoctor.value.doctor_id)
       if (index !== -1) {
         doctors.value[index].original_photo_url = photoUrl
       }
+      
+      // 清除缓存并重新加载照片
+      refreshDoctorPhoto(selectedDoctor.value.doctor_id)
+      
       toast.success('照片上传成功')
     })
     .catch(error => {
@@ -1399,11 +1503,17 @@ const confirmDeletePhoto = () => {
         toast.error(response.data.message?.detail || response.data.message || '删除失败')
         return
       }
+      
+      // 清除 original_photo_url
       selectedDoctor.value.original_photo_url = null
       const index = doctors.value.findIndex(d => d.doctor_id === selectedDoctor.value.doctor_id)
       if (index !== -1) {
         doctors.value[index].original_photo_url = null
       }
+      
+      // 清除缓存并重新加载（会显示默认头像）
+      refreshDoctorPhoto(selectedDoctor.value.doctor_id)
+      
       toast.success('照片删除成功')
     })
     .catch(error => {

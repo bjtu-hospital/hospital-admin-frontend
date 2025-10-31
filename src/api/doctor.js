@@ -42,6 +42,13 @@ export const uploadDoctorPhoto = (doctorId, formData) => {
     })
 }
 
+// 获取医生照片
+export const getDoctorPhoto = (doctorId) => {
+    return axios.get(`/admin/doctors/${doctorId}/photo`, {
+        responseType: 'blob' // 重要：设置响应类型为 blob
+    })
+}
+
 // 删除医生照片
 export const deleteDoctorPhoto = (doctorId) => {
     return axios.delete(`/admin/doctors/${doctorId}/photo`)
