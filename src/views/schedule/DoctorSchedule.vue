@@ -45,6 +45,29 @@
     </div>
 
     <div v-if="selectedDoctor">
+      <!-- 日期范围导航 - 只在列表视图显示 -->
+      <div v-if="viewMode === 'list'" class="flex items-center justify-between mb-4 bg-accent/30 p-3 rounded-lg">
+        <button
+          @click="previousWeekList"
+          class="flex items-center gap-1 px-3 py-1.5 rounded-md bg-background border border-border hover:bg-accent transition-colors text-sm"
+          title="上一周"
+        >
+          <ChevronLeft class="w-4 h-4" />
+          上一周
+        </button>
+        <span class="text-sm font-medium text-foreground">
+          {{ formatDateRange(listStartDate, listEndDate) }}
+        </span>
+        <button
+          @click="nextWeekList"
+          class="flex items-center gap-1 px-3 py-1.5 rounded-md bg-background border border-border hover:bg-accent transition-colors text-sm"
+          title="下一周"
+        >
+          下一周
+          <ChevronRight class="w-4 h-4" />
+        </button>
+      </div>
+
       <!-- 列表视图 -->
       <div v-if="viewMode === 'list' && schedules.length > 0" class="overflow-x-auto">
         <table class="w-full text-sm">
@@ -363,7 +386,11 @@ const clinics = ref([])
 const showScheduleDialog = ref(false)
 const editingSchedule = ref(null)
 const viewMode = ref('list') // 'list' 或 'calendar'
-const currentWeekIndex = ref(0) // 当前显示的周索引
+const currentWeekIndex = ref(0) // 当前显示的周索引（用于calendar视图）
+
+// 列表视图的日期范围
+const listStartDate = ref(new Date())
+const listEndDate = ref(new Date())
 
 // 获取所有日期并分组为周
 const allCalendarDates = computed(() => {
@@ -421,6 +448,40 @@ const getSchedulesByDateAndTime = (date, timeSection) => {
   return schedules.value.filter(s => s.date === date && s.time_section === timeSection)
 }
 
+// 列表视图 - 初始化为本周
+const initWeekList = () => {
+  const now = new Date('2025-10-31')
+  const day = now.getDay()
+  const diff = now.getDate() - day + (day === 0 ? -6 : 1)
+  listStartDate.value = new Date(now.setDate(diff))
+  listStartDate.value.setHours(0, 0, 0, 0)
+  
+  listEndDate.value = new Date(listStartDate.value)
+  listEndDate.value.setDate(listStartDate.value.getDate() + 6)
+  listEndDate.value.setHours(23, 59, 59, 999)
+}
+
+// 列表视图 - 上一周
+const previousWeekList = () => {
+  listStartDate.value = new Date(listStartDate.value.setDate(listStartDate.value.getDate() - 7))
+  listEndDate.value = new Date(listEndDate.value.setDate(listEndDate.value.getDate() - 7))
+  loadSchedules()
+}
+
+// 列表视图 - 下一周
+const nextWeekList = () => {
+  listStartDate.value = new Date(listStartDate.value.setDate(listStartDate.value.getDate() + 7))
+  listEndDate.value = new Date(listEndDate.value.setDate(listEndDate.value.getDate() + 7))
+  loadSchedules()
+}
+
+// 格式化日期范围
+const formatDateRange = (start, end) => {
+  const s = new Date(start)
+  const e = new Date(end)
+  return `${s.getFullYear()}年${s.getMonth() + 1}月${s.getDate()}日 - ${e.getMonth() + 1}月${e.getDate()}日`
+}
+
 // 切换视图时重置到第一周
 watch(viewMode, (newMode) => {
   if (newMode === 'calendar') {
@@ -435,13 +496,23 @@ const loadSchedules = async () => {
   }
 
   try {
-    const today = new Date('2025-10-31') // 使用固定日期
-    const oneMonthLater = new Date(today)
-    oneMonthLater.setMonth(today.getMonth() + 1)
+    // 列表视图使用listStartDate/listEndDate，月历视图使用固定的30天范围
+    let startDate, endDate
+    
+    if (viewMode.value === 'list') {
+      startDate = listStartDate.value.toISOString().split('T')[0]
+      endDate = listEndDate.value.toISOString().split('T')[0]
+    } else {
+      // 月历视图获取30天数据
+      const today = new Date('2025-10-31')
+      const oneMonthLater = new Date(today)
+      oneMonthLater.setMonth(today.getMonth() + 1)
+      
+      startDate = today.toISOString().split('T')[0]
+      endDate = oneMonthLater.toISOString().split('T')[0]
+    }
 
-    const startDate = today.toISOString().split('T')[0]
-    const endDate = oneMonthLater.toISOString().split('T')[0]
-
+    // 使用医生排班接口
     const response = await scheduleApi.getDoctorSchedules(
       props.selectedDoctor.doctor_id,
       startDate,
@@ -505,11 +576,16 @@ const handleScheduleSuccess = () => {
   emit('schedule-updated') // 通知父组件刷新门诊数据
 }
 
-watch(() => props.selectedDoctor, () => {
-  loadSchedules()
-}, { immediate: true })
+watch(() => props.selectedDoctor, (newDoctor) => {
+  if (newDoctor) {
+    loadSchedules()
+  }
+})
 
 watch(() => props.deptId, () => {
   loadClinics()
 }, { immediate: true })
+
+// 初始化列表视图的周
+initWeekList()
 </script>

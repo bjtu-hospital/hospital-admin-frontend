@@ -283,7 +283,7 @@ const handleSubmit = async () => {
     const data = {
       doctor_id: props.doctor.doctor_id,
       clinic_id: form.value.clinic_id,
-      date: form.value.date,
+      schedule_date: form.value.date,
       time_section: form.value.time_section,
       slot_type: form.value.slot_type,
       status: form.value.status,
@@ -293,7 +293,7 @@ const handleSubmit = async () => {
 
     let response
     if (props.schedule) {
-      // 编辑
+      // 编辑 - 后端更新接口接受 schedule_date 字段
       response = await scheduleApi.updateSchedule(props.schedule.schedule_id, data)
     } else {
       // 新增

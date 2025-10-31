@@ -104,8 +104,13 @@
         <div class="flex items-start gap-4 mb-3">
           <!-- 医生照片 -->
           <div class="flex-shrink-0">
-            <div v-if="doctor.original_photo_url" class="w-16 h-16 rounded-full overflow-hidden bg-accent">
-              <img :src="doctor.original_photo_url" :alt="doctor.name" class="w-full h-full object-cover" />
+            <div v-if="getDoctorPhotoUrl(doctor)" class="w-16 h-16 rounded-full overflow-hidden bg-accent">
+              <img 
+                :src="getDoctorPhotoUrl(doctor)" 
+                :alt="doctor.name" 
+                class="w-full h-full object-cover"
+                @error="handlePhotoError($event, doctor)"
+              />
             </div>
             <div v-else class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
               <UserCircle class="w-10 h-10 text-primary" />
@@ -268,11 +273,13 @@
             <!-- 医生照片区域 -->
             <div class="flex items-center gap-4 p-4 bg-accent/30 rounded-lg">
               <div class="flex-shrink-0">
-                <div v-if="selectedDoctor?.original_photo_url" class="relative group">
+                <div v-if="getDoctorPhotoUrl(selectedDoctor)" class="relative group">
                   <img
-                    :src="selectedDoctor.original_photo_url"
+                    :src="getDoctorPhotoUrl(selectedDoctor)"
                     :alt="selectedDoctor.name"
                     class="w-24 h-24 rounded-full object-cover"
+                    @error="handlePhotoError($event, selectedDoctor)"
+                  />
                   />
                   <div v-if="!isEditing" class="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                     <button
@@ -876,6 +883,39 @@ onMounted(() => {
   loadData()
 })
 
+// 获取医生照片URL - 优先使用API接口
+const getDoctorPhotoUrl = (doctor) => {
+  if (!doctor) return null
+  
+  // 如果已标记照片加载失败，返回 null 显示默认头像
+  if (doctor._photoError) return null
+  
+  // 如果有 doctor_id，优先使用 API 接口
+  if (doctor.doctor_id) {
+    return `http://localhost:8000/admin/doctors/${doctor.doctor_id}/photo`
+  }
+  
+  // 否则使用备用的绝对URL
+  return doctor.original_photo_url || null
+}
+
+// 处理照片加载错误 - 切换到备用URL或显示默认头像
+const handlePhotoError = (event, doctor) => {
+  const img = event.target
+  
+  // 如果当前使用的是API URL，切换到备用URL
+  if (img.src.includes('/admin/doctors/') && doctor.original_photo_url) {
+    img.src = doctor.original_photo_url
+  } else {
+    // 如果备用URL也失败或没有备用URL，标记为失败并显示默认头像
+    doctor._photoError = true
+    // 触发重新渲染
+    if (selectedDoctor.value?.doctor_id === doctor.doctor_id) {
+      selectedDoctor.value = { ...selectedDoctor.value, _photoError: true }
+    }
+  }
+}
+
 // 数据状态
 const doctors = ref([])
 const majorDepartments = ref([])
@@ -1254,55 +1294,61 @@ const handleTransfer = () => {
     })
 }
 
-// 账号操作（创建或修改）
+// 账号操作（创建或修改）- 使用统一的接口
 const handleAccountOperation = () => {
-  if (selectedDoctor.value.is_registered) {
-    // TODO: 修改账号密码的API（如果有）
-    console.log('修改账号密码:', accountForm.value)
-    toast.warning('修改账号密码功能待实现')
-    showAccountDialog.value = false
-  } else {
-    // 创建账号
-    console.log('创建账号:', accountForm.value)
-    const submitData = {
-      identifier: accountForm.value.identifier,
-      password: accountForm.value.password
-    }
-    // 只在有值的情况下添加 email 和 phonenumber
-    if (accountForm.value.email && accountForm.value.email.trim()) {
-      submitData.email = accountForm.value.email.trim()
-    }
-    if (accountForm.value.phonenumber && accountForm.value.phonenumber.trim()) {
-      submitData.phonenumber = accountForm.value.phonenumber.trim()
-    }
-    
-    doctorApi.createDoctorAccount(selectedDoctor.value.doctor_id, submitData)
-      .then(response => {
-        if (response.data.code !== 0) {
-          toast.error(response.data.message?.detail || response.data.message || '创建账号失败')
-          return
-        }
-        selectedDoctor.value.is_registered = true
+  const isUpdate = selectedDoctor.value.is_registered
+  const operationName = isUpdate ? '更新账号' : '创建账号'
+  
+  console.log(`${operationName}:`, accountForm.value)
+  
+  const submitData = {
+    identifier: accountForm.value.identifier,
+    password: accountForm.value.password
+  }
+  
+  // 只在有值的情况下添加 email 和 phonenumber
+  if (accountForm.value.email && accountForm.value.email.trim()) {
+    submitData.email = accountForm.value.email.trim()
+  }
+  if (accountForm.value.phonenumber && accountForm.value.phonenumber.trim()) {
+    submitData.phonenumber = accountForm.value.phonenumber.trim()
+  }
+  
+  doctorApi.createDoctorAccount(selectedDoctor.value.doctor_id, submitData)
+    .then(response => {
+      if (response.data.code !== 0) {
+        toast.error(response.data.message?.detail || response.data.message || `${operationName}失败`)
+        return
+      }
+      
+      // 更新医生信息
+      selectedDoctor.value.is_registered = true
+      if (response.data.message.user_id) {
         selectedDoctor.value.user_id = response.data.message.user_id
-        const index = doctors.value.findIndex(d => d.doctor_id === selectedDoctor.value.doctor_id)
-        if (index !== -1) {
-          doctors.value[index].is_registered = true
+      }
+      
+      // 更新列表中的医生信息
+      const index = doctors.value.findIndex(d => d.doctor_id === selectedDoctor.value.doctor_id)
+      if (index !== -1) {
+        doctors.value[index].is_registered = true
+        if (response.data.message.user_id) {
           doctors.value[index].user_id = response.data.message.user_id
         }
-        showAccountDialog.value = false
-        accountForm.value = {
-          identifier: '',
-          password: '',
-          email: '',
-          phonenumber: ''
-        }
-        toast.success('账号创建成功')
-      })
-      .catch(error => {
-        console.error('创建账号失败:', error)
-        toast.error(getErrorMessage(error, '创建账号失败，请重试'))
-      })
-  }
+      }
+      
+      showAccountDialog.value = false
+      accountForm.value = {
+        identifier: '',
+        password: '',
+        email: '',
+        phonenumber: ''
+      }
+      toast.success(`${operationName}成功`)
+    })
+    .catch(error => {
+      console.error(`${operationName}失败:`, error)
+      toast.error(getErrorMessage(error, `${operationName}失败，请重试`))
+    })
 }
 
 // 触发照片上传

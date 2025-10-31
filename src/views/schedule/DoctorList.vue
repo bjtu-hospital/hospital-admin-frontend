@@ -11,14 +11,13 @@
         :key="doctor.doctor_id"
         @click="selectDoctor(doctor)"
         :class="[
-          'px-3 py-1.5 rounded-md border-2 transition-all duration-200 text-sm',
+          'px-3 py-1.5 rounded-md border-2 transition-all duration-200 text-sm font-medium',
           selectedDoctorId === doctor.doctor_id
-            ? 'border-primary bg-primary/20 text-primary shadow-sm font-semibold'
+            ? 'border-primary bg-primary/20 text-primary shadow-sm'
             : 'border-border bg-background hover:border-primary/50 hover:bg-accent'
         ]"
       >
-        <div class="font-medium">{{ doctor.name }}</div>
-        <div class="text-xs opacity-70">{{ doctor.title }}</div>
+        {{ doctor.name }}
       </button>
     </div>
 
@@ -78,11 +77,17 @@ const selectDoctor = (doctor) => {
   }
 }
 
+// 根据 doctor_id 获取医生对象
+const getDoctorById = (doctorId) => {
+  return doctors.value.find(d => d.doctor_id === doctorId) || null
+}
+
 watch(() => props.deptId, () => {
   loadDoctors()
 }, { immediate: true })
 
 defineExpose({
-  selectedDoctorId
+  selectedDoctorId,
+  getDoctorById
 })
 </script>

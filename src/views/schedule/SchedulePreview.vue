@@ -237,6 +237,16 @@ const loadSchedules = async () => {
   }
 }
 
+// 刷新排班数据（用于其他页面添加排班后刷新）
+const refreshSchedules = () => {
+  loadSchedules()
+}
+
+// 暴露方法给父组件调用
+defineExpose({
+  refreshSchedules
+})
+
 watch(() => props.deptId, () => {
   if (props.deptId) {
     loadSchedules()

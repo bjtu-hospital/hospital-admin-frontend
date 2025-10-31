@@ -5,9 +5,10 @@ import {
     mockClinics,
     mockSchedules
 } from '@/views/schedule/schedule-mock'
+import { getDoctors } from './doctor'
 
 // 是否使用 Mock 数据
-const USE_MOCK = true
+const USE_MOCK = false
 
 // ==================== 科室相关 ====================
 
@@ -27,7 +28,7 @@ export const getDepartments = () => {
             }
         })
     }
-    return axios.get('/admin/schedule/departments')
+    return axios.get(`/admin/minor-departments/`)
 }
 
 // ==================== 医生相关 ====================
@@ -49,7 +50,8 @@ export const getDepartmentDoctors = (deptId) => {
             }
         })
     }
-    return axios.get(`/admin/schedule/departments/${deptId}/doctors`)
+    // 直接使用 getDoctors 并传入 dept_id 参数
+    return getDoctors(deptId)
 }
 
 // ==================== 门诊相关 ====================
@@ -71,7 +73,9 @@ export const getDepartmentClinics = (deptId) => {
             }
         })
     }
-    return axios.get(`/admin/schedule/departments/${deptId}/clinics`)
+    return axios.get('/admin/clinics', {
+        params: { dept_id: deptId }
+    })
 }
 
 /**
@@ -79,7 +83,7 @@ export const getDepartmentClinics = (deptId) => {
  * @param {Object} data - 门诊数据
  * @param {number} data.minor_dept_id - 科室ID
  * @param {string} data.name - 门诊名称
- * @param {number} data.type - 门诊类型 0-普通 1-国疗 2-特需
+ * @param {number} data.clinic_type - 门诊类型 0-普通 1-国疗 2-特需
  * @param {string} data.address - 门诊地址
  * @returns {Promise}
  * Response: { code: 0, message: { clinic_id: number, detail: string } }
@@ -89,7 +93,10 @@ export const createClinic = (data) => {
         const newClinic = {
             clinic_id: Date.now(),
             area_id: 1,
-            ...data,
+            name: data.name,
+            clinic_type: data.clinic_type,
+            address: data.address,
+            minor_dept_id: data.minor_dept_id,
             create_time: new Date().toISOString().replace('T', ' ').slice(0, 19)
         }
         // 将新门诊添加到对应科室的门诊列表
@@ -108,7 +115,7 @@ export const createClinic = (data) => {
             }
         })
     }
-    return axios.post('/admin/schedule/clinics', data)
+    return axios.post('/admin/clinics', data)
 }
 
 // ==================== 排班相关 ====================
@@ -136,7 +143,7 @@ export const getDepartmentSchedules = (deptId, startDate, endDate) => {
             }
         })
     }
-    return axios.get(`/admin/schedule/departments/${deptId}/schedules`, {
+    return axios.get(`/admin/departments/${deptId}/schedules`, {
         params: { start_date: startDate, end_date: endDate }
     })
 }
@@ -163,7 +170,7 @@ export const getDoctorSchedules = (doctorId, startDate, endDate) => {
             }
         })
     }
-    return axios.get(`/admin/schedule/doctors/${doctorId}/schedules`, {
+    return axios.get(`/admin/doctors/${doctorId}/schedules`, {
         params: { start_date: startDate, end_date: endDate }
     })
 }
@@ -190,7 +197,7 @@ export const getClinicSchedules = (clinicId, startDate, endDate) => {
             }
         })
     }
-    return axios.get(`/admin/schedule/clinics/${clinicId}/schedules`, {
+    return axios.get(`/admin/clinics/${clinicId}/schedules`, {
         params: { start_date: startDate, end_date: endDate }
     })
 }
@@ -200,7 +207,7 @@ export const getClinicSchedules = (clinicId, startDate, endDate) => {
  * @param {Object} data - 排班数据
  * @param {number} data.doctor_id - 医生ID
  * @param {number} data.clinic_id - 门诊ID
- * @param {string} data.date - 日期 YYYY-MM-DD
+ * @param {string} data.schedule_date - 日期 YYYY-MM-DD
  * @param {string} data.time_section - 时段：上午/下午/晚上
  * @param {string} data.slot_type - 类型：普通/专家/特需
  * @param {string} data.status - 状态：正常/停诊
@@ -235,8 +242,9 @@ export const createSchedule = (data) => {
             }
         }
 
-        // 计算星期几
-        const date = new Date(data.date)
+        // 计算星期几 (兼容 schedule_date 和 date 字段)
+        const dateStr = data.schedule_date || data.date
+        const date = new Date(dateStr)
         const weekDays = ['日', '一', '二', '三', '四', '五', '六']
         const weekDay = weekDays[date.getDay()]
 
@@ -247,7 +255,7 @@ export const createSchedule = (data) => {
             clinic_id: data.clinic_id,
             clinic_name: clinicName,
             clinic_type: clinicType,
-            date: data.date,
+            date: dateStr,
             week_day: weekDay,
             time_section: data.time_section,
             slot_type: data.slot_type,
@@ -270,7 +278,7 @@ export const createSchedule = (data) => {
             }
         })
     }
-    return axios.post('/admin/schedule/schedules', data)
+    return axios.post('/admin/schedules', data)
 }
 
 /**
@@ -296,11 +304,13 @@ export const updateSchedule = (scheduleId, data) => {
                 }
             }
 
-            // 如果更新了日期，重新计算星期
-            if (data.date && data.date !== mockSchedules[index].date) {
-                const date = new Date(data.date)
+            // 如果更新了日期，重新计算星期 (兼容 schedule_date 和 date 字段)
+            const newDate = data.schedule_date || data.date
+            if (newDate && newDate !== mockSchedules[index].date) {
+                const date = new Date(newDate)
                 const weekDays = ['日', '一', '二', '三', '四', '五', '六']
                 data.week_day = weekDays[date.getDay()]
+                data.date = newDate
             }
 
             // 如果状态改为停诊，将剩余号源设为0
@@ -320,7 +330,7 @@ export const updateSchedule = (scheduleId, data) => {
             }
         })
     }
-    return axios.put(`/admin/schedule/schedules/${scheduleId}`, data)
+    return axios.put(`/admin/schedules/${scheduleId}`, data)
 }
 
 /**
@@ -344,5 +354,5 @@ export const deleteSchedule = (scheduleId) => {
             }
         })
     }
-    return axios.delete(`/admin/schedule/schedules/${scheduleId}`)
+    return axios.delete(`/admin/schedules/${scheduleId}`)
 }

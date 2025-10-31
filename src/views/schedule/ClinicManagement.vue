@@ -5,13 +5,33 @@
         <Hospital class="w-5 h-5 text-primary" />
         门诊管理
       </h3>
-      <button
-        @click="showAddClinicDialog = true"
-        class="flex items-center gap-2 px-3 py-2 bg-primary/10 text-primary border border-primary/30 rounded-md hover:bg-primary/20 hover:border-primary/50 transition-colors text-sm shadow-sm font-medium"
-      >
-        <Plus class="w-4 h-4" />
-        新增门诊
-      </button>
+      <div class="flex items-center gap-2">
+        <!-- 周导航 -->
+        <button
+          @click="previousWeek"
+          class="p-2 rounded-md hover:bg-accent transition-colors"
+          title="上一周"
+        >
+          <ChevronLeft class="w-4 h-4" />
+        </button>
+        <span class="text-sm text-muted-foreground whitespace-nowrap">
+          {{ formatDateRange(startDate, endDate) }}
+        </span>
+        <button
+          @click="nextWeek"
+          class="p-2 rounded-md hover:bg-accent transition-colors"
+          title="下一周"
+        >
+          <ChevronRight class="w-4 h-4" />
+        </button>
+        <button
+          @click="showAddClinicDialog = true"
+          class="flex items-center gap-2 px-3 py-2 bg-primary/10 text-primary border border-primary/30 rounded-md hover:bg-primary/20 hover:border-primary/50 transition-colors text-sm shadow-sm font-medium ml-2"
+        >
+          <Plus class="w-4 h-4" />
+          新增门诊
+        </button>
+      </div>
     </div>
 
     <div v-if="clinics.length > 0" class="space-y-3">
@@ -37,14 +57,14 @@
                 <span
                   :class="[
                     'px-2 py-0.5 rounded text-xs font-medium',
-                    clinic.type === 0
+                    clinic.clinic_type === 0
                       ? 'bg-blue-500/10 text-blue-600'
-                      : clinic.type === 1
+                      : clinic.clinic_type === 1
                       ? 'bg-purple-500/10 text-purple-600'
                       : 'bg-orange-500/10 text-orange-600'
                   ]"
                 >
-                  {{ getClinicTypeName(clinic.type) }}
+                  {{ getClinicTypeName(clinic.clinic_type) }}
                 </span>
                 <span class="text-xs text-muted-foreground">
                   ({{ clinicSchedules[clinic.clinic_id]?.length || 0 }} 条排班)
@@ -155,7 +175,7 @@
             <div>
               <label class="block text-sm font-medium text-foreground mb-2">门诊类型 *</label>
               <select
-                v-model="clinicForm.type"
+                v-model="clinicForm.clinic_type"
                 class="w-full px-3 py-2 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option :value="0">普通</option>
@@ -183,7 +203,7 @@
             </button>
             <button
               @click="handleAddClinic"
-              :disabled="!clinicForm.name || clinicForm.type === null"
+              :disabled="!clinicForm.name || clinicForm.clinic_type === null"
               class="px-4 py-2 bg-primary/10 text-primary border border-primary/30 rounded-md hover:bg-primary/20 hover:border-primary/50 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
             >
               确认
@@ -197,7 +217,7 @@
 
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue'
-import { Hospital, Plus, X, ChevronRight } from 'lucide-vue-next'
+import { Hospital, Plus, X, ChevronRight, ChevronLeft } from 'lucide-vue-next'
 import * as scheduleApi from '@/api/schedule'
 import { useToast } from '@/utils/toast'
 
@@ -213,10 +233,12 @@ const toast = useToast()
 const clinics = ref([])
 const clinicSchedules = ref({})
 const expandedClinics = ref({}) // 展开状态
+const startDate = ref(new Date())
+const endDate = ref(new Date())
 const showAddClinicDialog = ref(false)
 const clinicForm = ref({
   name: '',
-  type: 0,
+  clinic_type: 0,
   address: ''
 })
 
@@ -230,9 +252,42 @@ const getClinicTypeName = (type) => {
   return map[type] || '未知'
 }
 
+// 初始化为本周（从2025-10-31所在的周开始）
+const initWeek = () => {
+  // 固定使用2025年10月31日作为基准日期
+  const now = new Date('2025-10-31')
+  const day = now.getDay() // 5 (星期五)
+  const diff = now.getDate() - day + (day === 0 ? -6 : 1) // 调整为周一
+  startDate.value = new Date(now.setDate(diff))
+  startDate.value.setHours(0, 0, 0, 0)
+  
+  endDate.value = new Date(startDate.value)
+  endDate.value.setDate(startDate.value.getDate() + 6)
+  endDate.value.setHours(23, 59, 59, 999)
+}
+
+const previousWeek = () => {
+  startDate.value = new Date(startDate.value.setDate(startDate.value.getDate() - 7))
+  endDate.value = new Date(endDate.value.setDate(endDate.value.getDate() - 7))
+  loadAllClinicSchedules()
+}
+
+const nextWeek = () => {
+  startDate.value = new Date(startDate.value.setDate(startDate.value.getDate() + 7))
+  endDate.value = new Date(endDate.value.setDate(endDate.value.getDate() + 7))
+  loadAllClinicSchedules()
+}
+
+const formatDateRange = (start, end) => {
+  const s = new Date(start)
+  const e = new Date(end)
+  return `${s.getFullYear()}年${s.getMonth() + 1}月${s.getDate()}日 - ${e.getMonth() + 1}月${e.getDate()}日`
+}
+
 const loadClinics = async () => {
   if (!props.deptId) {
     clinics.value = []
+    clinicSchedules.value = {}
     return
   }
 
@@ -244,8 +299,10 @@ const loadClinics = async () => {
     }
     clinics.value = response.data.message.clinics
     
-    // 加载每个门诊的排班数据
-    loadAllClinicSchedules()
+    // 只有当门诊列表不为空时才加载排班数据
+    if (clinics.value.length > 0) {
+      loadAllClinicSchedules()
+    }
   } catch (error) {
     console.error('加载门诊列表失败:', error)
     toast.error('加载门诊列表失败')
@@ -253,16 +310,15 @@ const loadClinics = async () => {
 }
 
 const loadAllClinicSchedules = async () => {
-  const today = new Date('2025-10-31') // 使用固定日期
-  const oneMonthLater = new Date(today)
-  oneMonthLater.setMonth(today.getMonth() + 1)
+  if (clinics.value.length === 0) return
 
-  const startDate = today.toISOString().split('T')[0]
-  const endDate = oneMonthLater.toISOString().split('T')[0]
+  const start = startDate.value.toISOString().split('T')[0]
+  const end = endDate.value.toISOString().split('T')[0]
 
+  // 使用门诊排班接口为每个门诊获取数据
   for (const clinic of clinics.value) {
     try {
-      const response = await scheduleApi.getClinicSchedules(clinic.clinic_id, startDate, endDate)
+      const response = await scheduleApi.getClinicSchedules(clinic.clinic_id, start, end)
       if (response.data.code === 0) {
         clinicSchedules.value[clinic.clinic_id] = response.data.message.schedules
       }
@@ -302,7 +358,7 @@ const handleAddClinic = async () => {
 
     toast.success('门诊创建成功')
     showAddClinicDialog.value = false
-    clinicForm.value = { name: '', type: 0, address: '' }
+    clinicForm.value = { name: '', clinic_type: 0, address: '' }
     loadClinics()
   } catch (error) {
     console.error('创建门诊失败:', error)
@@ -313,4 +369,7 @@ const handleAddClinic = async () => {
 watch(() => props.deptId, () => {
   loadClinics()
 }, { immediate: true })
+
+// 初始化周
+initWeek()
 </script>

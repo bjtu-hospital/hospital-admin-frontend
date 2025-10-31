@@ -33,7 +33,7 @@ export const createDoctorAccount = (doctorId, data) => {
     return axios.post(`/admin/doctors/${doctorId}/create-account`, data)
 }
 
-// 上传医生照片 (未完成)
+// 上传医生照片
 export const uploadDoctorPhoto = (doctorId, formData) => {
     return axios.post(`/admin/doctors/${doctorId}/photo`, formData, {
         headers: {
@@ -42,7 +42,7 @@ export const uploadDoctorPhoto = (doctorId, formData) => {
     })
 }
 
-// 删除医生照片 (未完成)
+// 删除医生照片
 export const deleteDoctorPhoto = (doctorId) => {
     return axios.delete(`/admin/doctors/${doctorId}/photo`)
 }

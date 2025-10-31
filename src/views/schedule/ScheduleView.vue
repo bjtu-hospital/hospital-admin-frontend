@@ -51,6 +51,7 @@
     <div class="space-y-6">
       <!-- a. 科室排班表预览 -->
       <SchedulePreview
+        ref="schedulePreviewRef"
         v-show="activeTab === 'preview'"
         :dept-id="selectedDeptId"
         :highlighted-doctor-id="highlightedDoctorId"
@@ -99,6 +100,7 @@ const tabs = [
 
 const doctorListRef = ref(null)
 const clinicManagementRef = ref(null)
+const schedulePreviewRef = ref(null)
 
 const handleDepartmentSelected = (dept) => {
   selectedDeptId.value = dept.minor_dept_id
@@ -116,18 +118,32 @@ const handleDoctorSelected = (doctor) => {
   }
 }
 
-// 当医生排班更新时，刷新门诊管理的数据
+// 当医生排班更新时，刷新门诊管理和科室排班预览的数据
 const handleScheduleUpdated = () => {
+  // 刷新门诊管理
   if (clinicManagementRef.value) {
     clinicManagementRef.value.refreshClinicSchedules()
   }
+  
+  // 刷新科室排班表预览
+  if (schedulePreviewRef.value) {
+    schedulePreviewRef.value.refreshSchedules()
+  }
 }
 
-// 监听高亮的医生ID，同步到医生列表
+// 监听高亮的医生ID，同步到医生列表并加载医生数据
 watch(highlightedDoctorId, (doctorId) => {
   if (doctorId && doctorListRef.value) {
-    // 如果医生列表组件已加载，更新选中状态
+    // 更新医生列表的选中状态
     doctorListRef.value.selectedDoctorId = doctorId
+    
+    // 获取完整的医生对象
+    const doctor = doctorListRef.value.getDoctorById(doctorId)
+    if (doctor) {
+      selectedDoctor.value = doctor
+      // 切换到医生排班数据页面
+      activeTab.value = 'doctor'
+    }
   }
 })
 </script>
