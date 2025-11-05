@@ -84,7 +84,7 @@ router.beforeEach((to, from, next) => {
     to: to.path,
     from: from.path,
     isAuthenticated: authStore.isAuthenticated,
-    token: authStore.token.value // 使用 .value 获取 ref 的实际值
+    token: authStore.token // ref 会自动解包
   })
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
