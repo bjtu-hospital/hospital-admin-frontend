@@ -34,39 +34,9 @@ const routes = [
         component: () => import("@/views/schedule/ScheduleView.vue"),
       },
       {
-        path: "booking",
-        name: "Booking",
-        component: () => import("@/views/booking/BookingView.vue"),
-      },
-      {
-        path: "pricing",
-        name: "Pricing",
-        component: () => import("@/views/pricing/PricingView.vue"),
-      },
-      {
         path: "audit",
         name: "Audit",
         component: () => import("@/views/audit/AuditView.vue"),
-      },
-      {
-        path: "extra-number",
-        name: "ExtraNumber",
-        component: () => import("@/views/extra-number/ExtraNumberView.vue"),
-      },
-      {
-        path: "statistics",
-        name: "Statistics",
-        component: () => import("@/views/statistics/StatisticsView.vue"),
-      },
-      {
-        path: "anti-scalper",
-        name: "AntiScalper",
-        component: () => import("@/views/anti-scalper/AntiScalperView.vue"),
-      },
-      {
-        path: "sync",
-        name: "Sync",
-        component: () => import("@/views/sync/SyncView.vue"),
       },
     ],
   },
