@@ -118,6 +118,40 @@ export const createClinic = (data) => {
     return axios.post('/admin/clinics', data)
 }
 
+/**
+ * 更新门诊信息
+ * @param {number} clinicId - 门诊ID
+ * @param {Object} data - 门诊数据（所有字段可选）
+ * @param {string} data.name - 门诊名称
+ * @param {string} data.address - 门诊地址
+ * @param {number} data.default_price_normal - 普通号默认价格
+ * @param {number} data.default_price_expert - 专家号默认价格
+ * @param {number} data.default_price_special - 特需号默认价格
+ * @returns {Promise}
+ * Response: { code: 0, message: { detail: string } }
+ */
+export const updateClinic = (clinicId, data) => {
+    if (USE_MOCK) {
+        // 在 mock 数据中查找并更新门诊
+        for (const deptId in mockClinics) {
+            const clinic = mockClinics[deptId].find(c => c.clinic_id === clinicId)
+            if (clinic) {
+                Object.assign(clinic, data)
+                return Promise.resolve({
+                    data: {
+                        code: 0,
+                        message: {
+                            detail: '门诊信息更新成功'
+                        }
+                    }
+                })
+            }
+        }
+        return Promise.reject(new Error('门诊不存在'))
+    }
+    return axios.put(`/admin/clinics/${clinicId}`, data)
+}
+
 // ==================== 排班相关 ====================
 
 /**

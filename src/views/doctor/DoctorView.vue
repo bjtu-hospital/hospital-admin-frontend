@@ -581,7 +581,7 @@
                   <input
                     v-model="createAccount"
                     type="checkbox"
-                    class="w-4 h-4 rounded border-input text-primary focus:ring-2 focus:ring-ring"
+                    class="w-4 h-4 rounded border-input text-primary focus:ring-0 focus:outline-none accent-primary cursor-pointer"
                   />
                   <span class="text-sm text-foreground">同时创建登录账号</span>
                 </label>

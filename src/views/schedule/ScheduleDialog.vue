@@ -2,22 +2,22 @@
   <Teleport to="body">
     <div
       v-if="visible"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     >
-      <div class="bg-card rounded-lg border border-border shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div class="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between z-10 bg-muted/30">
+      <div class="bg-card rounded-xl border border-border shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="bg-gradient-to-r from-muted/80 to-muted/50 border-b border-border p-6 flex items-center justify-between flex-shrink-0">
           <h3 class="text-xl font-semibold text-foreground">
             {{ schedule ? '修改排班' : '新增排班' }}
           </h3>
           <button
             @click="handleClose"
-            class="p-2 hover:bg-accent rounded-md transition-colors"
+            class="p-2 hover:bg-accent/80 rounded-lg transition-all hover:scale-105"
           >
             <X class="w-5 h-5" />
           </button>
         </div>
 
-        <div class="p-6 space-y-4">
+        <div class="p-6 space-y-4 overflow-y-auto flex-1">
           <!-- 医生信息 -->
           <div class="p-4 bg-accent/30 rounded-lg">
             <div class="text-sm text-muted-foreground">医生</div>
@@ -105,35 +105,75 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
-            <!-- 价格 -->
-            <div>
-              <label class="block text-sm font-medium text-foreground mb-2">价格 *</label>
-              <input
-                v-model.number="form.price"
-                type="number"
-                min="1"
-                max="10000"
-                step="1"
-                class="w-full px-3 py-2 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                placeholder="1-10000"
-              />
-            </div>
+          <!-- 价格设置 -->
+          <div>
+            <label class="block text-sm font-medium text-foreground mb-2">价格设置 *</label>
+            <div class="space-y-2">
+              <!-- 价格类型选择 -->
+              <div class="flex items-center gap-4">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    v-model="priceMode"
+                    value="default"
+                    class="w-4 h-4 text-primary focus:ring-0 focus:outline-none accent-primary cursor-pointer"
+                  />
+                  <span class="text-sm">使用门诊默认价格</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    v-model="priceMode"
+                    value="custom"
+                    class="w-4 h-4 text-primary focus:ring-0 focus:outline-none accent-primary cursor-pointer"
+                  />
+                  <span class="text-sm">自定义价格</span>
+                </label>
+              </div>
 
-            <!-- 总号源数 -->
-            <div>
-              <label class="block text-sm font-medium text-foreground mb-2">
-                总号源数 <span class="text-xs text-muted-foreground">(默认20)</span>
-              </label>
-              <input
-                v-model.number="form.total_slots"
-                type="number"
-                min="0"
-                max="100"
-                class="w-full px-3 py-2 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                placeholder="0-100"
-              />
+              <!-- 默认价格提示 -->
+              <div v-if="priceMode === 'default'" class="p-2 bg-blue-500/10 border border-blue-500/20 rounded text-xs text-blue-600">
+                <span v-if="getDefaultPrice()">
+                  将使用门诊默认价格: ¥{{ getDefaultPrice() }}
+                </span>
+                <span v-else class="text-orange-600">
+                  该门诊尚未设置{{ form.slot_type }}类型的默认价格，将使用系统默认值
+                </span>
+              </div>
+
+              <!-- 自定义价格输入 -->
+              <div v-if="priceMode === 'custom'" class="grid grid-cols-2 gap-4">
+                <div>
+                  <input
+                    v-model.number="form.price"
+                    type="number"
+                    min="1"
+                    max="10000"
+                    step="1"
+                    class="w-full px-3 py-2 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="1-10000"
+                  />
+                </div>
+                <div class="flex items-center text-xs text-muted-foreground">
+                  范围: 1-10000 元
+                </div>
+              </div>
             </div>
+          </div>
+
+          <!-- 总号源数 -->
+          <div>
+            <label class="block text-sm font-medium text-foreground mb-2">
+              总号源数 <span class="text-xs text-muted-foreground">(默认20)</span>
+            </label>
+            <input
+              v-model.number="form.total_slots"
+              type="number"
+              min="0"
+              max="100"
+              class="w-full px-3 py-2 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              placeholder="0-100"
+            />
           </div>
 
           <!-- 提示信息 -->
@@ -148,17 +188,17 @@
           </div>
         </div>
 
-        <div class="sticky bottom-0 bg-card border-t border-border p-6 flex justify-end gap-3 bg-muted/20">
+        <div class="bg-gradient-to-r from-muted/50 to-muted/30 border-t border-border p-6 flex justify-end gap-3 flex-shrink-0">
           <button
             @click="handleClose"
-            class="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/80 transition-colors font-medium shadow-sm"
+            class="px-5 py-2.5 bg-background/80 hover:bg-background border border-border text-foreground rounded-lg hover:shadow-md transition-all font-medium"
           >
             取消
           </button>
           <button
             @click="handleSubmit"
             :disabled="!isFormValid"
-            class="px-4 py-2 bg-primary/10 text-primary border border-primary/30 rounded-md hover:bg-primary/20 hover:border-primary/50 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            class="px-5 py-2.5 bg-primary/90 hover:bg-primary text-primary-foreground rounded-lg hover:shadow-lg transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
           >
             {{ schedule ? '保存' : '创建' }}
           </button>
@@ -200,6 +240,7 @@ const props = defineProps({
 const emit = defineEmits(['close', 'success'])
 const toast = useToast()
 
+const priceMode = ref('default') // 'default' 或 'custom'
 const form = ref({
   date: '',
   clinic_id: null,
@@ -251,25 +292,62 @@ const handleClinicChange = () => {
   if (selectedClinic.value) {
     if (selectedClinic.value.type === 2) {
       form.value.slot_type = '特需'
-      form.value.price = 500
     } else {
       form.value.slot_type = '普通'
+    }
+    // 更新价格（如果是自定义模式）
+    updatePriceForSlotType()
+  }
+}
+
+// 获取门诊默认价格
+const getDefaultPrice = () => {
+  if (!selectedClinic.value) return null
+  
+  const priceMap = {
+    '普通': selectedClinic.value.default_price_normal,
+    '专家': selectedClinic.value.default_price_expert,
+    '特需': selectedClinic.value.default_price_special
+  }
+  
+  return priceMap[form.value.slot_type]
+}
+
+// 根据类型更新价格
+const updatePriceForSlotType = () => {
+  if (priceMode.value === 'custom') {
+    // 自定义模式：设置建议价格
+    if (selectedClinic.value?.type === 2) {
+      form.value.price = 500
+    } else if (form.value.slot_type === '专家') {
+      form.value.price = 100
+    } else {
       form.value.price = 50
     }
   }
 }
 
+// 监听类型变化
+watch(() => form.value.slot_type, () => {
+  updatePriceForSlotType()
+})
+
 const isFormValid = computed(() => {
-  return (
+  const baseValid = (
     form.value.date &&
     form.value.clinic_id &&
     form.value.time_section &&
     form.value.slot_type &&
     form.value.status &&
-    form.value.price > 0 &&
-    form.value.price <= 10000 &&
     form.value.total_slots >= 0
   )
+  
+  // 如果是自定义价格模式，需要验证价格
+  if (priceMode.value === 'custom') {
+    return baseValid && form.value.price > 0 && form.value.price <= 10000
+  }
+  
+  return baseValid
 })
 
 const handleClose = () => {
@@ -287,7 +365,7 @@ const handleSubmit = async () => {
       time_section: form.value.time_section,
       slot_type: form.value.slot_type,
       status: form.value.status,
-      price: form.value.price,
+      price: priceMode.value === 'default' ? 0 : form.value.price, // 使用默认价格时发送0
       total_slots: form.value.total_slots
     }
 
@@ -327,6 +405,8 @@ watch(() => props.visible, (visible) => {
         price: props.schedule.price,
         total_slots: props.schedule.total_slots
       }
+      // 判断是否使用默认价格（编辑时如果价格为0则认为是默认价格）
+      priceMode.value = props.schedule.price === 0 ? 'default' : 'custom'
     } else {
       // 新增模式 - 重置表单
       const today = new Date()
@@ -339,6 +419,7 @@ watch(() => props.visible, (visible) => {
         price: 50,
         total_slots: 20
       }
+      priceMode.value = 'default' // 默认使用门诊默认价格
     }
   }
 }, { immediate: true })

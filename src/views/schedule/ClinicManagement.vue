@@ -42,10 +42,12 @@
       >
         <!-- 门诊头部 - 可点击展开 -->
         <div 
-          @click="toggleClinic(clinic.clinic_id)"
-          class="flex items-center justify-between p-3 bg-accent/30 cursor-pointer hover:bg-accent/50 transition-colors"
+          class="flex items-center justify-between p-3 bg-accent/30"
         >
-          <div class="flex items-center gap-3 flex-1">
+          <div 
+            @click="toggleClinic(clinic.clinic_id)"
+            class="flex items-center gap-3 flex-1 cursor-pointer hover:bg-accent/50 transition-colors -m-3 p-3"
+          >
             <button class="text-muted-foreground hover:text-foreground transition-colors">
               <ChevronRight 
                 :class="['w-4 h-4 transition-transform', expandedClinics[clinic.clinic_id] ? 'rotate-90' : '']"
@@ -73,6 +75,13 @@
               <p class="text-xs text-muted-foreground mt-0.5">{{ clinic.address || '未设置地址' }}</p>
             </div>
           </div>
+          <button
+            @click="openEditClinicDialog(clinic)"
+            class="p-2 hover:bg-accent rounded-md transition-colors"
+            title="编辑门诊"
+          >
+            <Pencil class="w-4 h-4 text-muted-foreground hover:text-foreground" />
+          </button>
         </div>
 
         <!-- 门诊排班表 - 可展开 -->
@@ -149,14 +158,14 @@
     <Teleport to="body">
       <div
         v-if="showAddClinicDialog"
-        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       >
-        <div class="bg-card rounded-lg border border-border shadow-2xl max-w-md w-full">
-          <div class="p-6 border-b border-border flex items-center justify-between bg-muted/30">
+        <div class="bg-card rounded-xl border border-border shadow-2xl max-w-md w-full overflow-hidden flex flex-col">
+          <div class="bg-gradient-to-r from-muted/80 to-muted/50 p-6 border-b border-border flex items-center justify-between flex-shrink-0">
             <h3 class="text-xl font-semibold text-foreground">新增门诊</h3>
             <button
               @click="showAddClinicDialog = false"
-              class="p-2 hover:bg-accent rounded-md transition-colors"
+              class="p-2 hover:bg-accent/80 rounded-lg transition-all hover:scale-105"
             >
               <X class="w-5 h-5" />
             </button>
@@ -194,19 +203,145 @@
             </div>
           </div>
 
-          <div class="p-6 border-t border-border flex justify-end gap-3 bg-muted/20">
+          <div class="bg-gradient-to-r from-muted/50 to-muted/30 p-6 border-t border-border flex justify-end gap-3 flex-shrink-0">
             <button
               @click="showAddClinicDialog = false"
-              class="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/80 transition-colors font-medium shadow-sm"
+              class="px-5 py-2.5 bg-background/80 hover:bg-background border border-border text-foreground rounded-lg hover:shadow-md transition-all font-medium"
             >
               取消
             </button>
             <button
               @click="handleAddClinic"
               :disabled="!clinicForm.name || clinicForm.clinic_type === null"
-              class="px-4 py-2 bg-primary/10 text-primary border border-primary/30 rounded-md hover:bg-primary/20 hover:border-primary/50 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+              class="px-5 py-2.5 bg-primary/90 hover:bg-primary text-primary-foreground rounded-lg hover:shadow-lg transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
             >
               确认
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- 编辑门诊对话框 -->
+    <Teleport to="body">
+      <div
+        v-if="showEditClinicDialog"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      >
+        <div class="bg-card rounded-xl border border-border shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col">
+          <div class="bg-gradient-to-r from-muted/80 to-muted/50 p-6 border-b border-border flex items-center justify-between flex-shrink-0">
+            <h3 class="text-xl font-semibold text-foreground">编辑门诊</h3>
+            <button
+              @click="closeEditClinicDialog"
+              class="p-2 hover:bg-accent/80 rounded-lg transition-all hover:scale-105"
+            >
+              <X class="w-5 h-5" />
+            </button>
+          </div>
+
+          <div class="p-6 space-y-4 overflow-y-auto flex-1">
+            <!-- 基本信息 -->
+            <div>
+              <label class="block text-sm font-medium text-foreground mb-2">门诊名称 *</label>
+              <input
+                v-model="editClinicForm.name"
+                type="text"
+                class="w-full px-3 py-2 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="请输入门诊名称"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-foreground mb-2">门诊地址</label>
+              <input
+                v-model="editClinicForm.address"
+                type="text"
+                class="w-full px-3 py-2 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="请输入门诊地址"
+              />
+            </div>
+
+            <!-- 默认价格设置 -->
+            <div class="border-t border-border pt-4 mt-4">
+              <h4 class="text-sm font-semibold text-foreground mb-3">默认价格设置</h4>
+              <p class="text-xs text-muted-foreground mb-3">
+                设置该门诊不同类型号源的默认价格，创建排班时可以选择使用默认价格。留空表示不设置默认价格。
+              </p>
+
+              <div class="space-y-3">
+                <!-- 普通号默认价格 -->
+                <div v-if="editClinicForm.clinic_type !== 2">
+                  <label class="block text-sm font-medium text-foreground mb-2">
+                    普通号默认价格 (元)
+                  </label>
+                  <input
+                    v-model.number="editClinicForm.default_price_normal"
+                    type="number"
+                    min="0"
+                    max="10000"
+                    step="1"
+                    class="w-full px-3 py-2 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="留空表示不设置"
+                  />
+                </div>
+
+                <!-- 专家号默认价格 -->
+                <div v-if="editClinicForm.clinic_type !== 2">
+                  <label class="block text-sm font-medium text-foreground mb-2">
+                    专家号默认价格 (元)
+                  </label>
+                  <input
+                    v-model.number="editClinicForm.default_price_expert"
+                    type="number"
+                    min="0"
+                    max="10000"
+                    step="1"
+                    class="w-full px-3 py-2 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="留空表示不设置"
+                  />
+                </div>
+
+                <!-- 特需号默认价格 -->
+                <div v-if="editClinicForm.clinic_type === 2">
+                  <label class="block text-sm font-medium text-foreground mb-2">
+                    特需号默认价格 (元)
+                  </label>
+                  <input
+                    v-model.number="editClinicForm.default_price_special"
+                    type="number"
+                    min="0"
+                    max="10000"
+                    step="1"
+                    class="w-full px-3 py-2 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="留空表示不设置"
+                  />
+                </div>
+              </div>
+
+              <div class="mt-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded text-xs text-blue-600">
+                <div class="font-medium mb-1">价格说明：</div>
+                <ul class="list-disc list-inside space-y-1">
+                  <li>设置默认价格后，创建排班时可选择使用门诊默认价格</li>
+                  <li>普通和国疗门诊可设置普通号和专家号价格</li>
+                  <li>特需门诊只能设置特需号价格</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gradient-to-r from-muted/50 to-muted/30 p-6 border-t border-border flex justify-end gap-3 flex-shrink-0">
+            <button
+              @click="closeEditClinicDialog"
+              class="px-5 py-2.5 bg-background/80 hover:bg-background border border-border text-foreground rounded-lg hover:shadow-md transition-all font-medium"
+            >
+              取消
+            </button>
+            <button
+              @click="handleUpdateClinic"
+              :disabled="!editClinicForm.name"
+              class="px-5 py-2.5 bg-primary/90 hover:bg-primary text-primary-foreground rounded-lg hover:shadow-lg transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
+            >
+              保存
             </button>
           </div>
         </div>
@@ -217,7 +352,7 @@
 
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue'
-import { Hospital, Plus, X, ChevronRight, ChevronLeft } from 'lucide-vue-next'
+import { Hospital, Plus, X, ChevronRight, ChevronLeft, Pencil } from 'lucide-vue-next'
 import * as scheduleApi from '@/api/schedule'
 import { useToast } from '@/utils/toast'
 
@@ -236,10 +371,20 @@ const expandedClinics = ref({}) // 展开状态
 const startDate = ref(new Date())
 const endDate = ref(new Date())
 const showAddClinicDialog = ref(false)
+const showEditClinicDialog = ref(false)
 const clinicForm = ref({
   name: '',
   clinic_type: 0,
   address: ''
+})
+const editClinicForm = ref({
+  clinic_id: null,
+  name: '',
+  address: '',
+  clinic_type: 0,
+  default_price_normal: null,
+  default_price_expert: null,
+  default_price_special: null
 })
 
 // 切换门诊展开/折叠
@@ -363,6 +508,65 @@ const handleAddClinic = async () => {
   } catch (error) {
     console.error('创建门诊失败:', error)
     toast.error('创建门诊失败')
+  }
+}
+
+// 打开编辑门诊对话框
+const openEditClinicDialog = (clinic) => {
+  editClinicForm.value = {
+    clinic_id: clinic.clinic_id,
+    name: clinic.name,
+    address: clinic.address || '',
+    clinic_type: clinic.clinic_type,
+    default_price_normal: clinic.default_price_normal || null,
+    default_price_expert: clinic.default_price_expert || null,
+    default_price_special: clinic.default_price_special || null
+  }
+  showEditClinicDialog.value = true
+}
+
+// 关闭编辑门诊对话框
+const closeEditClinicDialog = () => {
+  showEditClinicDialog.value = false
+  editClinicForm.value = {
+    clinic_id: null,
+    name: '',
+    address: '',
+    clinic_type: 0,
+    default_price_normal: null,
+    default_price_expert: null,
+    default_price_special: null
+  }
+}
+
+// 更新门诊信息
+const handleUpdateClinic = async () => {
+  if (!editClinicForm.value.name) {
+    toast.error('请输入门诊名称')
+    return
+  }
+
+  try {
+    const data = {
+      name: editClinicForm.value.name,
+      address: editClinicForm.value.address || undefined,
+      default_price_normal: editClinicForm.value.default_price_normal || undefined,
+      default_price_expert: editClinicForm.value.default_price_expert || undefined,
+      default_price_special: editClinicForm.value.default_price_special || undefined
+    }
+    
+    const response = await scheduleApi.updateClinic(editClinicForm.value.clinic_id, data)
+    if (response.data.code !== 0) {
+      toast.error(response.data.message?.msg || '更新门诊失败')
+      return
+    }
+
+    toast.success('门诊信息更新成功')
+    closeEditClinicDialog()
+    loadClinics()
+  } catch (error) {
+    console.error('更新门诊失败:', error)
+    toast.error('更新门诊失败')
   }
 }
 

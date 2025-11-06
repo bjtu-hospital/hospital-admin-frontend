@@ -173,18 +173,18 @@
           </button>
         </div>
 
-        <!-- 日历表格 -->
-        <div class="overflow-x-auto">
-          <div class="min-w-[800px]">
+        <!-- 日历表格容器 - 添加滚动条 -->
+        <div class="overflow-x-auto rounded-lg border border-border">
+          <div class="min-w-[800px] bg-card">
             <!-- 日期表头 -->
-            <div class="grid grid-cols-8 gap-1 mb-2">
+            <div class="grid grid-cols-8 gap-1 p-2 bg-muted/50">
               <div class="font-semibold text-sm text-muted-foreground p-2">日期/时段</div>
               <div 
                 v-for="date in currentWeekDates" 
                 :key="date.dateStr"
                 :class="[
                   'text-center p-2 rounded',
-                  isToday(date.dateStr) ? 'bg-primary/20 border-2 border-primary' : 'bg-accent/30'
+                  isToday(date.dateStr) ? 'bg-primary/20 border-2 border-primary' : 'bg-accent/50'
                 ]"
               >
                 <div class="text-xs font-semibold text-foreground">{{ date.day }}</div>
@@ -193,15 +193,15 @@
             </div>
 
             <!-- 上午 -->
-            <div class="grid grid-cols-8 gap-1 mb-1">
-              <div class="p-2 bg-accent/20 rounded font-medium text-sm flex items-center">
+            <div class="grid grid-cols-8 gap-1 p-2">
+              <div class="p-2 bg-accent/30 rounded font-medium text-sm flex items-center">
                 <Sunrise class="w-4 h-4 mr-1 text-orange-500" />
                 上午
               </div>
               <div 
                 v-for="date in currentWeekDates" 
                 :key="`morning-${date.dateStr}`"
-                class="p-1.5 border border-border rounded min-h-[70px] bg-card hover:bg-accent/50 transition-colors"
+                class="p-1.5 border border-border rounded min-h-[70px] bg-background hover:bg-accent/30 transition-colors"
               >
                 <div 
                   v-for="schedule in getSchedulesByDateAndTime(date.dateStr, '上午')"
@@ -209,18 +209,18 @@
                   :class="[
                     'mb-1 p-1 rounded text-xs cursor-pointer transition-all',
                     schedule.status === '停诊'
-                      ? 'bg-red-500/10 text-red-600 line-through'
+                      ? 'bg-red-500/10 text-red-600 line-through opacity-70'
                       : schedule.slot_type === '特需'
-                      ? 'bg-orange-500/10 text-orange-600 hover:bg-orange-500/20'
+                      ? 'bg-orange-500/20 text-orange-600 hover:bg-orange-500/30'
                       : schedule.slot_type === '专家'
-                      ? 'bg-blue-500/10 text-blue-600 hover:bg-blue-500/20'
-                      : 'bg-gray-500/10 text-gray-600 hover:bg-gray-500/20'
+                      ? 'bg-blue-500/20 text-blue-600 hover:bg-blue-500/30'
+                      : 'bg-gray-500/20 text-gray-600 hover:bg-gray-500/30'
                   ]"
                   @click="openEditDialog(schedule)"
                   :title="`${schedule.clinic_name} - ${schedule.slot_type} - ¥${schedule.price}`"
                 >
                   <div class="font-medium truncate">{{ schedule.slot_type }}</div>
-                  <div class="text-[10px] opacity-75 truncate">{{ schedule.clinic_name.substring(0, 5) }}</div>
+                  <div class="text-[10px] opacity-80 truncate">{{ schedule.clinic_name.substring(0, 5) }}</div>
                   <div class="text-[10px]">¥{{ schedule.price }}</div>
                 </div>
                 <div v-if="getSchedulesByDateAndTime(date.dateStr, '上午').length === 0" class="text-xs text-muted-foreground/50 text-center py-4">
@@ -230,15 +230,15 @@
             </div>
 
             <!-- 下午 -->
-            <div class="grid grid-cols-8 gap-1 mb-1">
-              <div class="p-2 bg-accent/20 rounded font-medium text-sm flex items-center">
+            <div class="grid grid-cols-8 gap-1 p-2">
+              <div class="p-2 bg-accent/30 rounded font-medium text-sm flex items-center">
                 <Sun class="w-4 h-4 mr-1 text-yellow-500" />
                 下午
               </div>
               <div 
                 v-for="date in currentWeekDates" 
                 :key="`afternoon-${date.dateStr}`"
-                class="p-1.5 border border-border rounded min-h-[70px] bg-card hover:bg-accent/50 transition-colors"
+                class="p-1.5 border border-border rounded min-h-[70px] bg-background hover:bg-accent/30 transition-colors"
               >
                 <div 
                   v-for="schedule in getSchedulesByDateAndTime(date.dateStr, '下午')"
@@ -246,18 +246,18 @@
                   :class="[
                     'mb-1 p-1 rounded text-xs cursor-pointer transition-all',
                     schedule.status === '停诊'
-                      ? 'bg-red-500/10 text-red-600 line-through'
+                      ? 'bg-red-500/10 text-red-600 line-through opacity-70'
                       : schedule.slot_type === '特需'
-                      ? 'bg-orange-500/10 text-orange-600 hover:bg-orange-500/20'
+                      ? 'bg-orange-500/20 text-orange-600 hover:bg-orange-500/30'
                       : schedule.slot_type === '专家'
-                      ? 'bg-blue-500/10 text-blue-600 hover:bg-blue-500/20'
-                      : 'bg-gray-500/10 text-gray-600 hover:bg-gray-500/20'
+                      ? 'bg-blue-500/20 text-blue-600 hover:bg-blue-500/30'
+                      : 'bg-gray-500/20 text-gray-600 hover:bg-gray-500/30'
                   ]"
                   @click="openEditDialog(schedule)"
                   :title="`${schedule.clinic_name} - ${schedule.slot_type} - ¥${schedule.price}`"
                 >
                   <div class="font-medium truncate">{{ schedule.slot_type }}</div>
-                  <div class="text-[10px] opacity-75 truncate">{{ schedule.clinic_name.substring(0, 5) }}</div>
+                  <div class="text-[10px] opacity-80 truncate">{{ schedule.clinic_name.substring(0, 5) }}</div>
                   <div class="text-[10px]">¥{{ schedule.price }}</div>
                 </div>
                 <div v-if="getSchedulesByDateAndTime(date.dateStr, '下午').length === 0" class="text-xs text-muted-foreground/50 text-center py-4">
@@ -267,15 +267,15 @@
             </div>
 
             <!-- 晚上 -->
-            <div class="grid grid-cols-8 gap-1">
-              <div class="p-2 bg-accent/20 rounded font-medium text-sm flex items-center">
+            <div class="grid grid-cols-8 gap-1 p-2">
+              <div class="p-2 bg-accent/30 rounded font-medium text-sm flex items-center">
                 <Moon class="w-4 h-4 mr-1 text-blue-500" />
                 晚上
               </div>
               <div 
                 v-for="date in currentWeekDates" 
                 :key="`evening-${date.dateStr}`"
-                class="p-1.5 border border-border rounded min-h-[70px] bg-card hover:bg-accent/50 transition-colors"
+                class="p-1.5 border border-border rounded min-h-[70px] bg-background hover:bg-accent/30 transition-colors"
               >
                 <div 
                   v-for="schedule in getSchedulesByDateAndTime(date.dateStr, '晚上')"
@@ -283,18 +283,18 @@
                   :class="[
                     'mb-1 p-1 rounded text-xs cursor-pointer transition-all',
                     schedule.status === '停诊'
-                      ? 'bg-red-500/10 text-red-600 line-through'
+                      ? 'bg-red-500/10 text-red-600 line-through opacity-70'
                       : schedule.slot_type === '特需'
-                      ? 'bg-orange-500/10 text-orange-600 hover:bg-orange-500/20'
+                      ? 'bg-orange-500/20 text-orange-600 hover:bg-orange-500/30'
                       : schedule.slot_type === '专家'
-                      ? 'bg-blue-500/10 text-blue-600 hover:bg-blue-500/20'
-                      : 'bg-gray-500/10 text-gray-600 hover:bg-gray-500/20'
+                      ? 'bg-blue-500/20 text-blue-600 hover:bg-blue-500/30'
+                      : 'bg-gray-500/20 text-gray-600 hover:bg-gray-500/30'
                   ]"
                   @click="openEditDialog(schedule)"
                   :title="`${schedule.clinic_name} - ${schedule.slot_type} - ¥${schedule.price}`"
                 >
                   <div class="font-medium truncate">{{ schedule.slot_type }}</div>
-                  <div class="text-[10px] opacity-75 truncate">{{ schedule.clinic_name.substring(0, 5) }}</div>
+                  <div class="text-[10px] opacity-80 truncate">{{ schedule.clinic_name.substring(0, 5) }}</div>
                   <div class="text-[10px]">¥{{ schedule.price }}</div>
                 </div>
                 <div v-if="getSchedulesByDateAndTime(date.dateStr, '晚上').length === 0" class="text-xs text-muted-foreground/50 text-center py-4">
@@ -302,33 +302,33 @@
                 </div>
               </div>
             </div>
+          </div>
+        </div>
 
-            <!-- 图例和说明 -->
-            <div class="mt-4 flex items-center justify-between text-xs">
-              <div class="flex items-center gap-4 text-muted-foreground">
-                <div class="flex items-center gap-1">
-                  <div class="w-3 h-3 rounded bg-gray-500/10"></div>
-                  <span>普通</span>
-                </div>
-                <div class="flex items-center gap-1">
-                  <div class="w-3 h-3 rounded bg-blue-500/10"></div>
-                  <span>专家</span>
-                </div>
-                <div class="flex items-center gap-1">
-                  <div class="w-3 h-3 rounded bg-orange-500/10"></div>
-                  <span>特需</span>
-                </div>
-                <div class="flex items-center gap-1">
-                  <div class="w-3 h-3 rounded bg-red-500/10"></div>
-                  <span>停诊</span>
-                </div>
-              </div>
-              <span class="text-muted-foreground">
-                <span class="font-medium text-foreground">提示：</span>
-                点击排班卡片可编辑 | 使用左右按钮切换周
-              </span>
+        <!-- 图例和说明 -->
+        <div class="flex items-center justify-between text-xs px-2">
+          <div class="flex items-center gap-4 text-muted-foreground">
+            <div class="flex items-center gap-1">
+              <div class="w-3 h-3 rounded bg-gray-500/20"></div>
+              <span>普通</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <div class="w-3 h-3 rounded bg-blue-500/20"></div>
+              <span>专家</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <div class="w-3 h-3 rounded bg-orange-500/20"></div>
+              <span>特需</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <div class="w-3 h-3 rounded bg-red-500/10"></div>
+              <span>停诊</span>
             </div>
           </div>
+          <span class="text-muted-foreground">
+            <span class="font-medium text-foreground">提示：</span>
+            点击排班卡片可编辑 | 使用左右按钮切换周
+          </span>
         </div>
       </div>
 
