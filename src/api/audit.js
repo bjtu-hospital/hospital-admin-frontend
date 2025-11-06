@@ -10,12 +10,8 @@ const USE_MOCK = true
 // ==================== 排班审核相关 ====================
 
 /**
- * 获取待审核的排班列表
- * @param {Object} params - 查询参数
- * @param {string} params.status - 审核状态：'pending'(待审核)、'approved'(已通过)、'rejected'(已拒绝)
- * @param {number} params.page - 页码，从1开始
- * @param {number} params.pageSize - 每页数量
- * @returns {Promise} 返回排班审核列表
+ * 获取所有排班审核列表（不带分页，返回全部数据）
+ * @returns {Promise} 返回所有排班审核列表
  * 
  * 【重要】数据结构说明：每个门诊一条记录
  * 
@@ -28,16 +24,16 @@ const USE_MOCK = true
  *         id: number,                    // 审核ID
  *         departmentId: number,          // 科室ID
  *         departmentName: string,        // 科室名称
- *         clinicId: number,              // 门诊ID（新增）
- *         clinicName: string,            // 门诊名称（新增）
+ *         clinicId: number,              // 门诊ID
+ *         clinicName: string,            // 门诊名称
  *         submitterId: number,           // 提交人ID（科室主任）
  *         submitterName: string,         // 提交人姓名
  *         submitTime: string,            // 提交时间 ISO 8601格式
  *         weekStart: string,             // 排班周起始日期 YYYY-MM-DD
  *         weekEnd: string,               // 排班周结束日期 YYYY-MM-DD
  *         remark: string,                // 备注信息
- *         status: string,                // 审核状态
- *         schedule: [                    // 7天的排班，每天3个时段（直接在顶层）
+ *         status: string,                // 审核状态: 'pending'(待审核)、'approved'(已通过)、'rejected'(已拒绝)
+ *         schedule: [                    // 7天的排班，每天3个时段
  *           [                            // 第1天 [上午, 下午, 晚上]
  *             { doctorId: number, doctorName: string } | null,
  *             { doctorId: number, doctorName: string } | null,
@@ -46,37 +42,24 @@ const USE_MOCK = true
  *           // ... 共7天
  *         ]
  *       }
- *     ],
- *     total: number,                     // 总记录数
- *     page: number,                      // 当前页码
- *     pageSize: number                   // 每页数量
+ *     ]
  *   }
  * }
+ * 
+ * 注意：前端需要根据 status 字段进行筛选和分页
  */
-export const getScheduleAudits = (params) => {
+export const getScheduleAudits = () => {
     if (USE_MOCK) {
-        const { status = 'pending', page = 1, pageSize = 10 } = params
-        const filteredData = status === 'all'
-            ? mockScheduleAudits
-            : mockScheduleAudits.filter(item => item.status === status)
-
-        const start = (page - 1) * pageSize
-        const end = start + pageSize
-        const pageData = filteredData.slice(start, end)
-
         return Promise.resolve({
             data: {
                 code: 0,
                 message: {
-                    audits: pageData,
-                    total: filteredData.length,
-                    page,
-                    pageSize
+                    audits: mockScheduleAudits
                 }
             }
         })
     }
-    return axios.get('/admin/audit/schedule/', { params })
+    return axios.get('/admin/audit/schedule/')
 }
 
 /**
@@ -180,12 +163,8 @@ export const rejectScheduleAudit = (auditId, data) => {
 // ==================== 请假审核相关 ====================
 
 /**
- * 获取待审核的请假列表
- * @param {Object} params - 查询参数
- * @param {string} params.status - 审核状态：'pending'(待审核)、'approved'(已通过)、'rejected'(已拒绝)
- * @param {number} params.page - 页码，从1开始
- * @param {number} params.pageSize - 每页数量
- * @returns {Promise} 返回请假审核列表
+ * 获取所有请假审核列表（不带分页，返回全部数据）
+ * @returns {Promise} 返回所有请假审核列表
  * 
  * Response格式:
  * {
@@ -210,39 +189,26 @@ export const rejectScheduleAudit = (auditId, data) => {
  *           }
  *         ],
  *         submitTime: string,            // 提交时间 ISO 8601格式
- *         status: string,                // 审核状态
+ *         status: string,                // 审核状态: 'pending'(待审核)、'approved'(已通过)、'rejected'(已拒绝)
  *       }
- *     ],
- *     total: number,                     // 总记录数
- *     page: number,                      // 当前页码
- *     pageSize: number                   // 每页数量
+ *     ]
  *   }
  * }
+ * 
+ * 注意：前端需要根据 status 字段进行筛选和分页
  */
-export const getLeaveAudits = (params) => {
+export const getLeaveAudits = () => {
     if (USE_MOCK) {
-        const { status = 'pending', page = 1, pageSize = 10 } = params
-        const filteredData = status === 'all'
-            ? mockLeaveAudits
-            : mockLeaveAudits.filter(item => item.status === status)
-
-        const start = (page - 1) * pageSize
-        const end = start + pageSize
-        const pageData = filteredData.slice(start, end)
-
         return Promise.resolve({
             data: {
                 code: 0,
                 message: {
-                    audits: pageData,
-                    total: filteredData.length,
-                    page,
-                    pageSize
+                    audits: mockLeaveAudits
                 }
             }
         })
     }
-    return axios.get('/admin/audit/leave/', { params })
+    return axios.get('/admin/audit/leave/')
 }
 
 /**

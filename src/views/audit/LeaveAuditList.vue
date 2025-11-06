@@ -125,33 +125,43 @@ const emit = defineEmits(['audit-click', 'refresh'])
 const toast = useToast()
 
 // 数据
-const audits = ref([])
+const allAudits = ref([]) // 存储所有数据
 const currentPage = ref(1)
 const pageSize = ref(10)
-const total = ref(0)
+
+// 根据 status 筛选的数据
+const filteredAudits = computed(() => {
+  if (props.status === 'all') {
+    return allAudits.value
+  }
+  return allAudits.value.filter(item => item.status === props.status)
+})
+
+// 总记录数
+const total = computed(() => filteredAudits.value.length)
 
 // 计算总页数
 const totalPages = computed(() => Math.ceil(total.value / pageSize.value))
 
-// 监听 status 变化，重新加载数据
-watch(() => props.status, () => {
-  currentPage.value = 1 // 重置到第一页
-  loadData()
+// 当前页显示的数据
+const audits = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return filteredAudits.value.slice(start, end)
 })
 
-// 加载数据
+// 监听 status 变化，重置到第一页
+watch(() => props.status, () => {
+  currentPage.value = 1
+})
+
+// 加载所有数据
 const loadData = async () => {
   try {
-    const response = await getLeaveAudits({
-      status: props.status,
-      page: currentPage.value,
-      pageSize: pageSize.value
-    })
+    const response = await getLeaveAudits()
 
     if (response.data.code === 0) {
-      audits.value = response.data.message.audits
-      total.value = response.data.message.total
-      currentPage.value = response.data.message.page
+      allAudits.value = response.data.message.audits
     } else {
       toast.error('加载失败')
     }
