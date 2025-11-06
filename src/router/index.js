@@ -38,6 +38,11 @@ const routes = [
         name: "Audit",
         component: () => import("@/views/audit/AuditView.vue"),
       },
+      {
+        path: "rules",
+        name: "Rules",
+        component: () => import("@/views/rules/Rules.vue"),
+      },
     ],
   },
 ]
