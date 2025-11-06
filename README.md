@@ -1,5 +1,11 @@
-# Vue 3 + Vite
+# 北京交通大学医院(fake) 管理端前端
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+## 如何运行:
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+前置条件: 
+1. 配置好mysql数据库和对应的redis数据库
+2. 运行管理端后端
+
+运行前端:
+1. npm install
+2. npm run dev
