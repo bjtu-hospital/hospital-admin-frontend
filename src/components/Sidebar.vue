@@ -81,13 +81,7 @@ const menuItems = [
   { path: '/department', label: '科室管理', icon: Building2 },
   { path: '/doctor', label: '医生管理', icon: UserCog },
   { path: '/schedule', label: '排班规则', icon: Calendar },
-  { path: '/booking', label: '挂号退号', icon: ClipboardList },
-  { path: '/pricing', label: '号别价格', icon: DollarSign },
   { path: '/audit', label: '信息审核', icon: FileCheck },
-  { path: '/extra-number', label: '加号管理', icon: UserPlus },
-  { path: '/statistics', label: '统计分析', icon: BarChart3 },
-  { path: '/anti-scalper', label: '防黄牛', icon: Shield },
-  { path: '/sync', label: '数据同步', icon: RefreshCw }
 ]
 </script>
 
