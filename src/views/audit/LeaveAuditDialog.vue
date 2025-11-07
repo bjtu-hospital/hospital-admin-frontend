@@ -101,18 +101,19 @@
                 v-for="(attachment, index) in audit.attachments"
                 :key="index"
                 class="group relative aspect-video bg-muted/30 rounded-lg overflow-hidden border border-border hover:border-primary transition-colors cursor-pointer"
-                @click="previewImage(attachment.url)"
+                @click="previewImage(attachment)"
               >
                 <img
-                  :src="attachment.url"
-                  :alt="attachment.name"
+                  :src="getAttachmentUrl(attachment)"
+                  :alt="getAttachmentName(attachment)"
                   class="w-full h-full object-cover"
+                  @error="handleImageError"
                 />
                 <div class="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors flex items-center justify-center">
                   <Eye class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
                 <div class="absolute bottom-0 left-0 right-0 px-3 py-2 bg-gradient-to-t from-black/70 to-transparent">
-                  <p class="text-xs text-white truncate">{{ attachment.name }}</p>
+                  <p class="text-xs text-white truncate">{{ getAttachmentName(attachment) }}</p>
                 </div>
               </div>
             </div>
@@ -231,9 +232,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 import { X, UserX, Calendar, Eye, CheckCircle, XCircle } from 'lucide-vue-next'
-import { approveLeaveAudit, rejectLeaveAudit } from '@/api/audit'
+import { approveLeaveAudit, rejectLeaveAudit, getAuditAttachment } from '@/api/audit'
 import { useToast } from '@/utils/toast'
 
 const props = defineProps({
@@ -256,6 +257,81 @@ const isSubmitting = ref(false)
 const showRejectDialog = ref(false)
 const rejectReason = ref('')
 const previewImageUrl = ref(null)
+const attachmentBlobUrls = ref({}) // 缓存附件的 Blob URL
+
+/**
+ * 获取附件的 URL
+ * 通过 API 获取附件并转换为 Blob URL（会自动携带 token）
+ */
+const getAttachmentUrl = (attachment) => {
+  // 如果已经有缓存的 Blob URL，直接返回
+  if (attachmentBlobUrls.value[attachment.url]) {
+    return attachmentBlobUrls.value[attachment.url]
+  }
+  
+  // 异步加载附件
+  loadAttachment(attachment)
+  
+  // 暂时返回 null，等待加载完成
+  return null
+}
+
+/**
+ * 通过 API 加载附件并转换为 Blob URL
+ */
+const loadAttachment = async (attachment) => {
+  try {
+    const response = await getAuditAttachment(attachment.url)
+    
+    // 创建 Blob URL
+    const blob = new Blob([response.data], { 
+      type: response.headers['content-type'] || 'image/jpeg' 
+    })
+    const blobUrl = URL.createObjectURL(blob)
+    
+    // 缓存 Blob URL
+    attachmentBlobUrls.value[attachment.url] = blobUrl
+  } catch (error) {
+    console.error('加载附件失败:', error)
+    // 加载失败时使用占位图
+    attachmentBlobUrls.value[attachment.url] = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"%3E%3Crect fill="%23f0f0f0" width="400" height="300"/%3E%3Ctext fill="%23999" font-family="Arial" font-size="20" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3E加载失败%3C/text%3E%3C/svg%3E'
+  }
+}
+
+/**
+ * 获取附件的名称
+ */
+const getAttachmentName = (attachment) => {
+  return attachment.name || '附件'
+}
+
+/**
+ * 处理图片加载错误
+ */
+const handleImageError = (event) => {
+  // 加载失败时显示占位图
+  event.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"%3E%3Crect fill="%23f0f0f0" width="400" height="300"/%3E%3Ctext fill="%23999" font-family="Arial" font-size="20" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3E加载失败%3C/text%3E%3C/svg%3E'
+}
+
+// 监听 audit 变化，清除旧的 Blob URL 并预加载新附件
+watch(() => props.audit, (newAudit, oldAudit) => {
+  // 清除旧的 Blob URL
+  if (oldAudit?.attachments) {
+    Object.values(attachmentBlobUrls.value).forEach(url => {
+      if (url.startsWith('blob:')) {
+        URL.revokeObjectURL(url)
+      }
+    })
+    attachmentBlobUrls.value = {}
+  }
+  
+  // 预加载新附件
+  if (newAudit?.attachments) {
+    newAudit.attachments.forEach(attachment => {
+      loadAttachment(attachment)
+    })
+  }
+}, { immediate: true })
 
 // 格式化日期
 const formatDate = (dateString) => {
@@ -281,8 +357,8 @@ const formatDateTime = (dateString) => {
 }
 
 // 预览图片
-const previewImage = (url) => {
-  previewImageUrl.value = url
+const previewImage = (attachment) => {
+  previewImageUrl.value = getAttachmentUrl(attachment)
 }
 
 // 关闭对话框
@@ -301,21 +377,20 @@ const handleApprove = async () => {
 
   try {
     isSubmitting.value = true
-    const response = await approveLeaveAudit(props.audit.id, {
-      comment: ''
-    })
+    const response = await approveLeaveAudit(props.audit.id, '审核通过')
 
     if (response.data.code === 0) {
       toast.success('审核通过成功')
+      isSubmitting.value = false
       emit('refresh')
       handleClose()
     } else {
       toast.error('操作失败')
+      isSubmitting.value = false
     }
   } catch (error) {
     console.error('审核通过失败:', error)
     toast.error('操作失败')
-  } finally {
     isSubmitting.value = false
   }
 }
@@ -332,24 +407,23 @@ const confirmReject = async () => {
 
   try {
     isSubmitting.value = true
-    const response = await rejectLeaveAudit(props.audit.id, {
-      reason: rejectReason.value
-    })
+    const response = await rejectLeaveAudit(props.audit.id, rejectReason.value)
 
     if (response.data.code === 0) {
       toast.success('已拒绝该请假申请')
-      showRejectDialog.value = false  // 关闭拒绝对话框
+      showRejectDialog.value = false
+      isSubmitting.value = false
       emit('refresh')
       setTimeout(() => {
-        handleClose()  // 延迟关闭主对话框
+        handleClose()
       }, 300)
     } else {
       toast.error('操作失败')
+      isSubmitting.value = false
     }
   } catch (error) {
     console.error('拒绝审核失败:', error)
     toast.error('操作失败')
-  } finally {
     isSubmitting.value = false
   }
 }

@@ -303,21 +303,20 @@ const handleApprove = async () => {
 
   try {
     isSubmitting.value = true
-    const response = await approveScheduleAudit(props.audit.id, {
-      comment: ''
-    })
+    const response = await approveScheduleAudit(props.audit.id, '审核通过')
 
     if (response.data.code === 0) {
       toast.success('审核通过成功')
+      isSubmitting.value = false
       emit('refresh')
       handleClose()
     } else {
       toast.error('操作失败')
+      isSubmitting.value = false
     }
   } catch (error) {
     console.error('审核通过失败:', error)
     toast.error('操作失败')
-  } finally {
     isSubmitting.value = false
   }
 }
@@ -334,24 +333,23 @@ const confirmReject = async () => {
 
   try {
     isSubmitting.value = true
-    const response = await rejectScheduleAudit(props.audit.id, {
-      reason: rejectReason.value
-    })
+    const response = await rejectScheduleAudit(props.audit.id, rejectReason.value)
 
     if (response.data.code === 0) {
       toast.success('已拒绝该排班申请')
-      showRejectDialog.value = false  // 关闭拒绝对话框
+      showRejectDialog.value = false
+      isSubmitting.value = false
       emit('refresh')
       setTimeout(() => {
-        handleClose()  // 延迟关闭主对话框
+        handleClose()
       }, 300)
     } else {
       toast.error('操作失败')
+      isSubmitting.value = false
     }
   } catch (error) {
     console.error('拒绝审核失败:', error)
     toast.error('操作失败')
-  } finally {
     isSubmitting.value = false
   }
 }

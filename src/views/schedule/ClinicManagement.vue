@@ -252,6 +252,27 @@
             </div>
 
             <div>
+              <label class="block text-sm font-medium text-foreground mb-2">门诊类型</label>
+              <div class="px-3 py-2 bg-muted/50 border border-border rounded-md text-foreground">
+                <span
+                  :class="[
+                    'px-2 py-1 rounded text-sm font-medium',
+                    editClinicForm.clinic_type === 0
+                      ? 'bg-blue-500/10 text-blue-600'
+                      : editClinicForm.clinic_type === 1
+                      ? 'bg-purple-500/10 text-purple-600'
+                      : 'bg-orange-500/10 text-orange-600'
+                  ]"
+                >
+                  {{ getClinicTypeName(editClinicForm.clinic_type) }}
+                </span>
+              </div>
+              <p class="text-xs text-muted-foreground mt-1">
+                门诊类型创建后不可修改
+              </p>
+            </div>
+
+            <div>
               <label class="block text-sm font-medium text-foreground mb-2">门诊地址</label>
               <input
                 v-model="editClinicForm.address"

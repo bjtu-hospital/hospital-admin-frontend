@@ -1,7 +1,7 @@
 import axios from './axios'
 
 // 是否使用 Mock 数据
-const USE_MOCK = true
+const USE_MOCK = false
 
 // Mock 数据
 let mockConfig = null
@@ -48,7 +48,7 @@ export const getSystemConfig = () => {
             }
         })
     }
-    return axios.get('/admin/config/')
+    return axios.get('/admin/config')
 }
 
 /**
@@ -75,7 +75,9 @@ export const getSystemConfig = () => {
  * Response格式:
  * {
  *   code: 0,
- *   message: 'success'
+ *   message: {
+ *     detail: 'string'
+ *   }
  * }
  */
 export const updateSystemConfig = (config) => {
@@ -85,9 +87,11 @@ export const updateSystemConfig = (config) => {
         return Promise.resolve({
             data: {
                 code: 0,
-                message: 'success'
+                message: {
+                    detail: '配置更新成功'
+                }
             }
         })
     }
-    return axios.put('/admin/config/', config)
+    return axios.put('/admin/config', config)
 }

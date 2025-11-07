@@ -52,7 +52,7 @@
                 :key="clinic.clinic_id"
                 :value="clinic.clinic_id"
               >
-                {{ clinic.name }} ({{ getClinicTypeName(clinic.type) }})
+                {{ clinic.name }} ({{ getClinicTypeName(clinic.clinic_type) }})
               </option>
             </select>
           </div>
@@ -87,7 +87,7 @@
                   {{ type }}
                 </option>
               </select>
-              <p v-if="selectedClinic?.type === 2" class="text-xs text-orange-600 mt-1">
+              <p v-if="selectedClinic?.clinic_type === 2" class="text-xs text-orange-600 mt-1">
                 特需门诊只能选择特需类型
               </p>
             </div>
@@ -273,7 +273,7 @@ const selectedClinic = computed(() => {
 const availableSlotTypes = computed(() => {
   if (!selectedClinic.value) return ['普通', '专家', '特需']
   
-  if (selectedClinic.value.type === 2) {
+  if (selectedClinic.value.clinic_type === 2) {
     // 特需门诊只能是特需
     return ['特需']
   } else {
@@ -290,7 +290,7 @@ const getClinicTypeName = (type) => {
 const handleClinicChange = () => {
   // 当切换门诊时，自动调整类型
   if (selectedClinic.value) {
-    if (selectedClinic.value.type === 2) {
+    if (selectedClinic.value.clinic_type === 2) {
       form.value.slot_type = '特需'
     } else {
       form.value.slot_type = '普通'
@@ -317,7 +317,7 @@ const getDefaultPrice = () => {
 const updatePriceForSlotType = () => {
   if (priceMode.value === 'custom') {
     // 自定义模式：设置建议价格
-    if (selectedClinic.value?.type === 2) {
+    if (selectedClinic.value?.clinic_type === 2) {
       form.value.price = 500
     } else if (form.value.slot_type === '专家') {
       form.value.price = 100

@@ -34,17 +34,20 @@ export const mockScheduleAudits = [
     // 心血管内科 - 心内一诊室
     {
         id: 1,
-        departmentId: 1,
-        departmentName: '心血管内科',
-        clinicId: 1,
-        clinicName: '心内一诊室',
-        submitterId: 101,
-        submitterName: '张主任',
-        submitTime: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        weekStart: getWeekDates(1).start,
-        weekEnd: getWeekDates(1).end,
+        department_id: 1,
+        department_name: '心血管内科',
+        clinic_id: 1,
+        clinic_name: '心内一诊室',
+        submitter_id: 101,
+        submitter_name: '张主任',
+        submit_time: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        week_start: getWeekDates(1).start,
+        week_end: getWeekDates(1).end,
         remark: '下周因春节假期，部分医生排班有调整，请尽快审核。',
         status: 'pending',
+        auditor_id: null,
+        audit_time: null,
+        audit_remark: null,
         schedule: [
             // 周一
             [
@@ -311,14 +314,8 @@ export const mockLeaveAudits = [
         reason: '因家中有急事需要处理，特此请假3天。已经和科室主任沟通，会安排其他医生代班。家中父亲突发疾病住院，需要陪护照顾。',
         reasonPreview: '因家中有急事需要处理，特此请假3天。已经和科室主任沟通，会安排其他医...',
         attachments: [
-            {
-                url: 'https://via.placeholder.com/400x300/4A90E2/ffffff?text=Medical+Certificate',
-                name: '诊断证明.jpg'
-            },
-            {
-                url: 'https://via.placeholder.com/400x300/7ED321/ffffff?text=Hospital+Records',
-                name: '住院记录.jpg'
-            }
+            { url: "static/images/audit/1.jpg", name: "诊断证明.jpg" },
+            { url: "static/images/audit/2.jpg", name: "住院记录.jpg" }
         ],
         submitTime: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
         status: 'pending'
@@ -335,10 +332,7 @@ export const mockLeaveAudits = [
         reason: '参加学术会议，需要请假4天。本次会议是由中华医学会主办的全国呼吸系统疾病学术研讨会，对提升专业水平有重要意义。',
         reasonPreview: '参加学术会议，需要请假4天。本次会议是由中华医学会主办的全国呼吸系统...',
         attachments: [
-            {
-                url: 'https://via.placeholder.com/400x300/F5A623/ffffff?text=Conference+Invitation',
-                name: '会议邀请函.jpg'
-            }
+            { url: "static/images/audit/3.jpg", name: "会议邀请函.jpg" }
         ],
         submitTime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
         status: 'pending'
