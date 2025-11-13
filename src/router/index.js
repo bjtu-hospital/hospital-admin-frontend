@@ -43,6 +43,11 @@ const routes = [
         name: "Rules",
         component: () => import("@/views/rules/Rules.vue"),
       },
+      {
+        path: "anti-bot",
+        name: "AntiBot",
+        component: () => import("@/views/anti-bot/AntiBot.vue"),
+      },
     ],
   },
 ]

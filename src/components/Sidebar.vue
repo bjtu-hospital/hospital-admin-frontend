@@ -84,7 +84,8 @@ const menuItems = [
   { path: '/doctor', label: '医生管理', icon: UserCog },
   { path: '/schedule', label: '排班规则', icon: Calendar },
   { path: '/audit', label: '信息审核', icon: FileCheck },
-  { path: '/rules', label: '规则配置', icon: Settings2 }
+  { path: '/rules', label: '规则配置', icon: Settings2 },
+  { path: '/anti-bot', label: '用户异常行为管理', icon: FileCheck }
 ]
 </script>
 
