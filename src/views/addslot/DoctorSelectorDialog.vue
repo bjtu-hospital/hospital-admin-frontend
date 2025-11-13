@@ -2,9 +2,10 @@
   <Teleport to="body">
     <div
       v-if="isOpen"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      class="fixed inset-0 bg-black/50 flex items-start justify-center z-50 p-4 pt-20 overflow-y-auto"
+      @click.self="handleClose"
     >
-      <div class="bg-card rounded-lg border border-border shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto m-4">
+      <div class="bg-card rounded-lg border border-border shadow-2xl max-w-2xl w-full overflow-y-auto">
         <!-- 标题栏 -->
         <div class="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between z-10 bg-muted/30">
           <h3 class="text-xl font-semibold text-foreground">选择医生</h3>
