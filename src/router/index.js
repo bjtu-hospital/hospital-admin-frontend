@@ -48,6 +48,11 @@ const routes = [
         name: "Static",
         component: () => import("@/views/static/StaticView.vue"),
       },
+      {
+        path: "addslot",
+        name: "AddSlot",
+        component: () => import("@/views/addslot/AddSlot.vue"),
+      },
     ],
   },
 ]

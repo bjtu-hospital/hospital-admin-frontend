@@ -85,7 +85,8 @@ const menuItems = [
   { path: '/schedule', label: '排班规则', icon: Calendar },
   { path: '/audit', label: '信息审核', icon: FileCheck },
   { path: '/rules', label: '规则配置', icon: Settings2 },
-  { path: '/static', label: '数据统计', icon: BarChart3  }
+  { path: '/static', label: '数据统计', icon: BarChart3 },
+  { path: '/addslot', label: '加号管理', icon: UserPlus }
 ]
 </script>
 
