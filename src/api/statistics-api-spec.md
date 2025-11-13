@@ -31,6 +31,7 @@
       "特需": 100
     },
     "total_revenue": 125000.00,
+    "completed_consultations": 1188,
     "areas": [
       {
         "area_id": 1,
@@ -48,6 +49,13 @@
   }
 }
 ```
+
+**字段说明**:
+- `total_registrations`: 总挂号数量
+- `completed_consultations`: 已完成就诊数量（已就诊完成的患者人数）
+- `total_revenue`: 总收入（单位：元）
+- `by_slot_type`: 按号源类型统计
+- `areas`: 按院区统计
 
 **响应示例** (时间序列):
 ```json
@@ -72,7 +80,7 @@
     ],
     "total_registrations": 8200,
     "total_revenue": 820000.00,
-    "avg_daily_registrations": 1171
+    "completed_consultations": 7850
   }
 }
 ```
@@ -152,6 +160,7 @@
       "特需": 10
     },
     "total_revenue": 12000.00,
+    "completed_consultations": 115,
     "doctors": [
       {
         "doctor_id": 301,
@@ -171,6 +180,14 @@
     ]
   }
 }
+```
+
+**字段说明**:
+- `total_registrations`: 科室总挂号数量
+- `completed_consultations`: 已完成就诊数量
+- `total_revenue`: 科室总收入（单位：元）
+- `by_slot_type`: 按号源类型统计
+- `doctors`: 该科室医生列表及其统计数据
 ```
 
 **响应示例** (时间序列):
@@ -198,7 +215,7 @@
     ],
     "total_registrations": 750,
     "total_revenue": 75000.00,
-    "avg_daily_registrations": 107
+    "completed_consultations": 720
   }
 }
 ```
@@ -233,6 +250,7 @@
       "特需": 5
     },
     "total_revenue": 4500.00,
+    "completed_consultations": 44,
     "by_time_section": {
       "上午": 25,
       "下午": 15,
@@ -251,6 +269,15 @@
     ]
   }
 }
+```
+
+**字段说明**:
+- `total_registrations`: 医生总挂号数量
+- `completed_consultations`: 已完成就诊数量
+- `total_revenue`: 医生总收入（单位：元）
+- `by_slot_type`: 按号源类型统计
+- `by_time_section`: 按时段统计
+- `schedules`: 排班详情及利用率
 ```
 
 **响应示例** (时间序列):
@@ -278,7 +305,7 @@
     ],
     "total_registrations": 1200,
     "total_revenue": 120000.00,
-    "avg_daily_registrations": 40,
+    "completed_consultations": 1150,
     "working_days": 30
   }
 }

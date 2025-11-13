@@ -42,7 +42,7 @@ export const mockHospitalRegistrations = (params) => {
                 time_series: timeSeries,
                 total_registrations: totalRegistrations,
                 total_revenue: parseFloat(totalRevenue.toFixed(2)),
-                avg_daily_registrations: Math.round(totalRegistrations / days)
+                completed_consultations: Math.round(totalRegistrations * 0.95) // 95% completion rate
             }
         }
     }
@@ -58,7 +58,7 @@ export const mockHospitalRegistrations = (params) => {
                 "特需": 100
             },
             total_revenue: 125000.00,
-            avg_daily_registrations: 1171,
+            completed_consultations: 1188, // 95% of total
             areas: [
                 {
                     area_id: 1,
@@ -169,7 +169,7 @@ export const mockDepartmentRegistrations = (minorDeptId, params) => {
                 time_series: timeSeries,
                 total_registrations: totalRegistrations,
                 total_revenue: parseFloat(totalRevenue.toFixed(2)),
-                avg_daily_registrations: Math.round(totalRegistrations / days)
+                completed_consultations: Math.round(totalRegistrations * 0.96) // 96% completion rate
             }
         }
     }
@@ -188,7 +188,7 @@ export const mockDepartmentRegistrations = (minorDeptId, params) => {
                 "特需": 10
             },
             total_revenue: 12000.00,
-            avg_daily_registrations: 107,
+            completed_consultations: 115, // 96% of total
             doctors: [
                 {
                     doctor_id: 301,
@@ -253,7 +253,7 @@ export const mockDoctorRegistrations = (doctorId, params) => {
                 time_series: timeSeries,
                 total_registrations: totalRegistrations,
                 total_revenue: parseFloat(totalRevenue.toFixed(2)),
-                avg_daily_registrations: Math.round(totalRegistrations / days),
+                completed_consultations: Math.round(totalRegistrations * 0.97), // 97% completion rate
                 working_days: days
             }
         }
@@ -274,7 +274,7 @@ export const mockDoctorRegistrations = (doctorId, params) => {
                 "特需": 5
             },
             total_revenue: 4500.00,
-            avg_daily_registrations: 40,
+            completed_consultations: 44, // 97% of total
             by_time_section: {
                 "上午": 25,
                 "下午": 15,

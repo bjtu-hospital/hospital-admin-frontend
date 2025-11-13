@@ -1,26 +1,26 @@
 <template>
-  <div class="statistics-view p-6 bg-gray-50 min-h-screen">
+  <div class="statistics-view p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
     <!-- Header -->
     <div class="mb-6">
-      <h1 class="text-2xl font-bold text-gray-800 mb-2">数据统计分析</h1>
-      <p class="text-gray-600">查看医院挂号数据的可视化统计与分析</p>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">数据统计分析</h1>
+      <p class="text-gray-600 dark:text-gray-400">查看医院挂号数据的可视化统计与分析</p>
     </div>
 
     <!-- Date Selector -->
-    <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-6">
       <div class="flex items-center justify-between flex-wrap gap-4">
         <div class="flex items-center gap-4">
-          <label class="text-sm font-medium text-gray-700">统计日期:</label>
+          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">统计日期:</label>
           <input
             v-model="selectedDate"
             type="date"
-            class="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             @change="handleDateChange"
           />
         </div>
         
         <div class="flex items-center gap-2">
-          <label class="text-sm font-medium text-gray-700">时间范围:</label>
+          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">时间范围:</label>
           <button
             v-for="range in dateRanges"
             :key="range.value"
@@ -29,7 +29,7 @@
               'px-4 py-2 rounded-md text-sm font-medium transition-colors',
               selectedRange === range.value
                 ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             ]"
           >
             {{ range.label }}
@@ -77,9 +77,9 @@
             :clickable="false"
           />
           <StatsCard
-            title="平均挂号量"
-            :value="Math.round(hospitalStats.avg_daily_registrations || 0)"
-            subtitle="日均挂号量"
+            title="已就诊完成"
+            :value="hospitalStats.completed_consultations || 0"
+            subtitle="已完成就诊人数"
             icon="users"
             color="yellow"
             :clickable="false"
@@ -89,8 +89,8 @@
         <!-- Charts Row 1 -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <!-- Slot Type Distribution -->
-          <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">号源类型分布</h3>
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">号源类型分布</h3>
             <PieChart
               :data="slotTypeChartData"
               :title="''"
@@ -99,8 +99,8 @@
           </div>
 
           <!-- Area Distribution -->
-          <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">院区挂号分布</h3>
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">院区挂号分布</h3>
             <BarChart
               :data="areaChartData"
               :title="''"
@@ -112,8 +112,8 @@
         </div>
 
         <!-- Time Series Chart -->
-        <div v-if="selectedRange !== 'today'" class="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">挂号趋势分析</h3>
+        <div v-if="selectedRange !== 'today'" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">挂号趋势分析</h3>
           <LineChart
             :data="timeSeriesChartData"
             :title="''"
@@ -122,13 +122,13 @@
         </div>
 
         <!-- Department Ranking -->
-        <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold text-gray-800">科室排行榜（Top 10）</h3>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">科室排行榜（Top 10）</h3>
             <select
               v-model="rankingOrderBy"
               @change="loadDepartmentRanking"
-              class="px-3 py-2 border border-gray-300 rounded-md text-sm"
+              class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             >
               <option value="registrations">按挂号量</option>
               <option value="revenue">按收入</option>
@@ -173,9 +173,9 @@
             :clickable="false"
           />
           <StatsCard
-            title="平均挂号量"
-            :value="Math.round(departmentStats.avg_daily_registrations || 0)"
-            subtitle="日均挂号量"
+            title="已就诊完成"
+            :value="departmentStats.completed_consultations || 0"
+            subtitle="已完成就诊人数"
             icon="chart"
             color="yellow"
             :clickable="false"
@@ -185,8 +185,8 @@
         <!-- Charts Row -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <!-- Slot Type Distribution -->
-          <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">号源类型分布</h3>
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">号源类型分布</h3>
             <PieChart
               :data="departmentSlotTypeData"
               :title="''"
@@ -195,8 +195,8 @@
           </div>
 
           <!-- Doctor Distribution -->
-          <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">医生挂号分布</h3>
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">医生挂号分布</h3>
             <BarChart
               :data="doctorChartData"
               :title="''"
@@ -208,8 +208,8 @@
         </div>
 
         <!-- Time Series Chart -->
-        <div v-if="selectedRange !== 'today'" class="bg-white rounded-lg shadow-md p-6">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">科室挂号趋势</h3>
+        <div v-if="selectedRange !== 'today'" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">科室挂号趋势</h3>
           <LineChart
             :data="departmentTimeSeriesData"
             :title="''"
@@ -247,9 +247,9 @@
             :clickable="false"
           />
           <StatsCard
-            title="平均挂号量"
-            :value="Math.round(doctorStats.avg_daily_registrations || 0)"
-            subtitle="日均挂号量"
+            title="已就诊完成"
+            :value="doctorStats.completed_consultations || 0"
+            subtitle="已完成就诊人数"
             icon="chart"
             color="yellow"
             :clickable="false"
@@ -259,8 +259,8 @@
         <!-- Charts Row -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <!-- Slot Type Distribution -->
-          <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">号源类型分布</h3>
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">号源类型分布</h3>
             <PieChart
               :data="doctorSlotTypeData"
               :title="''"
@@ -269,8 +269,8 @@
           </div>
 
           <!-- Time Section Distribution -->
-          <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">时段分布</h3>
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">时段分布</h3>
             <BarChart
               :data="timeSectionChartData"
               :title="''"
@@ -280,8 +280,8 @@
         </div>
 
         <!-- Time Series Chart -->
-        <div v-if="selectedRange !== 'today'" class="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">医生挂号趋势</h3>
+        <div v-if="selectedRange !== 'today'" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">医生挂号趋势</h3>
           <LineChart
             :data="doctorTimeSeriesData"
             :title="''"
@@ -290,58 +290,58 @@
         </div>
 
         <!-- Schedule Details -->
-        <div v-if="doctorStats.schedules?.length" class="bg-white rounded-lg shadow-md p-6">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">排班详情</h3>
+        <div v-if="doctorStats.schedules?.length" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">排班详情</h3>
           <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead class="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     诊室
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     时段
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     号源类型
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     挂号数
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     总号源
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     利用率
                   </th>
                 </tr>
               </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
+              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 <tr v-for="schedule in doctorStats.schedules" :key="schedule.schedule_id">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                     {{ schedule.clinic_name }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                     {{ schedule.time_section }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                     {{ schedule.slot_type }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                     {{ schedule.registrations }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                     {{ schedule.total_slots }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm">
                     <div class="flex items-center">
-                      <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                      <div class="w-16 bg-gray-200 dark:bg-gray-600 rounded-full h-2 mr-2">
                         <div
                           class="bg-blue-600 h-2 rounded-full"
                           :style="{ width: `${schedule.utilization_rate * 100}%` }"
                         ></div>
                       </div>
-                      <span class="text-gray-900">
+                      <span class="text-gray-900 dark:text-gray-100">
                         {{ (schedule.utilization_rate * 100).toFixed(1) }}%
                       </span>
                     </div>
@@ -349,6 +349,140 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Navigation Section -->
+    <div class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+        快速导航
+      </h3>
+      
+      <!-- Level Selection -->
+      <div class="mb-6">
+        <div class="flex gap-4 border-b border-gray-200 dark:border-gray-700">
+          <button
+            @click="navigateToHospital"
+            :class="[
+              'px-4 py-2 font-medium text-sm transition-all',
+              currentLevel === 'hospital'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400'
+            ]"
+          >
+            医院概览
+          </button>
+          <button
+            @click="showDepartmentSelection = true"
+            :class="[
+              'px-4 py-2 font-medium text-sm transition-all',
+              currentLevel === 'department'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400'
+            ]"
+          >
+            科室统计
+          </button>
+          <button
+            @click="showDoctorSelection = true"
+            :class="[
+              'px-4 py-2 font-medium text-sm transition-all',
+              currentLevel === 'doctor'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400'
+            ]"
+          >
+            医生统计
+          </button>
+        </div>
+      </div>
+
+      <!-- Department Selection Panel -->
+      <div v-if="showDepartmentSelection" class="mb-4">
+        <div class="flex justify-between items-center mb-3">
+          <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">选择科室</h4>
+          <button
+            @click="showDepartmentSelection = false"
+            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <button
+            v-for="dept in departmentRankingList"
+            :key="dept.minor_dept_id"
+            @click="handleDepartmentSelect(dept.minor_dept_id, dept.dept_name)"
+            class="p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700 transition-all text-left"
+          >
+            <div class="font-medium text-gray-900 dark:text-gray-100 text-sm">{{ dept.dept_name }}</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              挂号: {{ dept.registrations }} | 收入: ¥{{ dept.revenue }}
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Doctor Selection Panel -->
+      <div v-if="showDoctorSelection" class="mb-4">
+        <div class="flex justify-between items-center mb-3">
+          <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">选择医生</h4>
+          <button
+            @click="showDoctorSelection = false"
+            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <!-- First select department if not already selected -->
+        <div v-if="currentLevel !== 'department' && currentLevel !== 'doctor'" class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+          请先选择科室以查看该科室下的医生列表
+        </div>
+        
+        <!-- Show doctors from current department -->
+        <div v-else-if="departmentStats.doctors?.length" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <button
+            v-for="doctor in departmentStats.doctors"
+            :key="doctor.doctor_id"
+            @click="handleDoctorSelect(doctor.doctor_id, doctor.doctor_name)"
+            class="p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700 transition-all text-left"
+          >
+            <div class="font-medium text-gray-900 dark:text-gray-100 text-sm">{{ doctor.doctor_name }}</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              挂号: {{ doctor.registrations }}
+            </div>
+          </button>
+        </div>
+        
+        <div v-else class="text-sm text-gray-500 dark:text-gray-400">
+          暂无医生数据
+        </div>
+      </div>
+
+      <!-- Navigation Tips -->
+      <div v-if="!showDepartmentSelection && !showDoctorSelection" class="bg-blue-50 dark:bg-gray-700 rounded-lg p-4">
+        <div class="flex items-start gap-3">
+          <svg class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+          </svg>
+          <div class="flex-1">
+            <h4 class="text-sm font-medium text-blue-900 dark:text-blue-200 mb-2">使用说明</h4>
+            <ul class="text-sm text-blue-800 dark:text-blue-300 space-y-1">
+              <li>• 点击上方标签页切换到不同层级</li>
+              <li>• 选择"科室统计"可查看各科室详细数据</li>
+              <li>• 选择"医生统计"需先选择科室，再选择该科室下的医生</li>
+              <li>• 使用面包屑导航可快速返回上级页面</li>
+            </ul>
           </div>
         </div>
       </div>
@@ -380,6 +514,10 @@ const currentLevel = ref('hospital') // hospital, department, doctor
 const selectedDate = ref(new Date().toISOString().split('T')[0])
 const selectedRange = ref('today')
 const rankingOrderBy = ref('registrations')
+
+// Navigation panel state
+const showDepartmentSelection = ref(false)
+const showDoctorSelection = ref(false)
 
 // Breadcrumb navigation
 const navigationStack = ref([
@@ -607,6 +745,37 @@ const handleBreadcrumbNav = ({ item, index }) => {
   navigationStack.value = navigationStack.value.slice(0, index + 1)
   currentLevel.value = item.level
   refreshCurrentLevel()
+}
+
+// Quick navigation handlers
+const navigateToHospital = () => {
+  navigationStack.value = [{ level: 'hospital', name: '医院总览', id: null }]
+  currentLevel.value = 'hospital'
+  showDepartmentSelection.value = false
+  showDoctorSelection.value = false
+  loadHospitalStats()
+  loadDepartmentRanking()
+}
+
+const handleDepartmentSelect = (deptId, deptName) => {
+  navigationStack.value = [
+    { level: 'hospital', name: '医院总览', id: null },
+    { level: 'department', name: deptName, id: deptId }
+  ]
+  currentLevel.value = 'department'
+  showDepartmentSelection.value = false
+  loadDepartmentStats(deptId)
+}
+
+const handleDoctorSelect = (doctorId, doctorName) => {
+  navigationStack.value.push({
+    level: 'doctor',
+    name: doctorName,
+    id: doctorId
+  })
+  currentLevel.value = 'doctor'
+  showDoctorSelection.value = false
+  loadDoctorStats(doctorId)
 }
 
 // Lifecycle

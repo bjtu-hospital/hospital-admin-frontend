@@ -3,8 +3,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 import * as echarts from 'echarts'
+import { useThemeStore } from '@/stores/theme'
 
 const props = defineProps({
   data: {
@@ -42,6 +43,9 @@ const emit = defineEmits(['chartClick'])
 
 const chartRef = ref(null)
 let chartInstance = null
+const themeStore = useThemeStore()
+
+const textColor = computed(() => themeStore.isDark ? '#e5e7eb' : '#374151')
 
 const initChart = () => {
   if (!chartRef.value) return
@@ -55,7 +59,8 @@ const initChart = () => {
       top: 20,
       textStyle: {
         fontSize: 16,
-        fontWeight: 'normal'
+        fontWeight: 'normal',
+        color: textColor.value
       }
     },
     tooltip: {
@@ -66,6 +71,11 @@ const initChart = () => {
       formatter: (params) => {
         const param = params[0]
         return `${param.name}<br/>${param.seriesName}: ${param.value}`
+      },
+      backgroundColor: themeStore.isDark ? '#1f2937' : '#fff',
+      borderColor: themeStore.isDark ? '#374151' : '#e5e7eb',
+      textStyle: {
+        color: textColor.value
       }
     },
     grid: {
@@ -81,17 +91,42 @@ const initChart = () => {
       axisLabel: {
         interval: 0,
         rotate: props.data.length > 10 ? 45 : 0,
-        fontSize: 12
+        fontSize: 12,
+        color: textColor.value
+      },
+      axisLine: {
+        lineStyle: {
+          color: themeStore.isDark ? '#374151' : '#e5e7eb'
+        }
       },
       name: props.xAxisLabel,
       nameLocation: 'middle',
-      nameGap: 50
+      nameGap: 50,
+      nameTextStyle: {
+        color: textColor.value
+      }
     },
     yAxis: {
       type: 'value',
       name: props.yAxisLabel,
       nameLocation: 'middle',
-      nameGap: 50
+      nameGap: 50,
+      nameTextStyle: {
+        color: textColor.value
+      },
+      axisLabel: {
+        color: textColor.value
+      },
+      axisLine: {
+        lineStyle: {
+          color: themeStore.isDark ? '#374151' : '#e5e7eb'
+        }
+      },
+      splitLine: {
+        lineStyle: {
+          color: themeStore.isDark ? '#374151' : '#e5e7eb'
+        }
+      }
     },
     series: [
       {
@@ -142,6 +177,12 @@ watch(() => props.data, () => {
     initChart()
   }
 }, { deep: true })
+
+watch(() => themeStore.isDark, () => {
+  if (chartInstance) {
+    initChart()
+  }
+})
 
 onMounted(() => {
   initChart()

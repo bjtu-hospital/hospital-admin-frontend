@@ -3,8 +3,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 import * as echarts from 'echarts'
+import { useThemeStore } from '@/stores/theme'
 
 const props = defineProps({
   data: {
@@ -28,6 +29,10 @@ const props = defineProps({
 
 const chartRef = ref(null)
 let chartInstance = null
+const themeStore = useThemeStore()
+
+const textColor = computed(() => themeStore.isDark ? '#e5e7eb' : '#374151')
+const borderColor = computed(() => themeStore.isDark ? '#1f2937' : '#fff')
 
 const initChart = () => {
   if (!chartRef.value) return
@@ -41,17 +46,26 @@ const initChart = () => {
       top: 20,
       textStyle: {
         fontSize: 16,
-        fontWeight: 'normal'
+        fontWeight: 'normal',
+        color: textColor.value
       }
     },
     tooltip: {
       trigger: 'item',
-      formatter: '{b}: {c} ({d}%)'
+      formatter: '{b}: {c} ({d}%)',
+      backgroundColor: themeStore.isDark ? '#1f2937' : '#fff',
+      borderColor: themeStore.isDark ? '#374151' : '#e5e7eb',
+      textStyle: {
+        color: textColor.value
+      }
     },
     legend: {
       orient: 'vertical',
       right: 20,
-      top: 'center'
+      top: 'center',
+      textStyle: {
+        color: textColor.value
+      }
     },
     series: [
       {
@@ -62,12 +76,13 @@ const initChart = () => {
         avoidLabelOverlap: true,
         itemStyle: {
           borderRadius: 10,
-          borderColor: '#fff',
+          borderColor: borderColor.value,
           borderWidth: 2
         },
         label: {
           show: true,
-          formatter: '{b}\n{c}'
+          formatter: '{b}\n{c}',
+          color: textColor.value
         },
         emphasis: {
           label: {
@@ -77,7 +92,10 @@ const initChart = () => {
           }
         },
         labelLine: {
-          show: true
+          show: true,
+          lineStyle: {
+            color: textColor.value
+          }
         },
         data: props.data
       }
@@ -96,6 +114,12 @@ watch(() => props.data, () => {
     initChart()
   }
 }, { deep: true })
+
+watch(() => themeStore.isDark, () => {
+  if (chartInstance) {
+    initChart()
+  }
+})
 
 onMounted(() => {
   initChart()

@@ -3,8 +3,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 import * as echarts from 'echarts'
+import { useThemeStore } from '@/stores/theme'
 
 const props = defineProps({
   data: {
@@ -36,6 +37,9 @@ const props = defineProps({
 
 const chartRef = ref(null)
 let chartInstance = null
+const themeStore = useThemeStore()
+
+const textColor = computed(() => themeStore.isDark ? '#e5e7eb' : '#374151')
 
 const initChart = () => {
   if (!chartRef.value) return
@@ -49,7 +53,8 @@ const initChart = () => {
       top: 20,
       textStyle: {
         fontSize: 16,
-        fontWeight: 'normal'
+        fontWeight: 'normal',
+        color: textColor.value
       }
     },
     tooltip: {
@@ -57,13 +62,21 @@ const initChart = () => {
       axisPointer: {
         type: 'cross',
         label: {
-          backgroundColor: '#6a7985'
+          backgroundColor: themeStore.isDark ? '#1f2937' : '#6a7985'
         }
+      },
+      backgroundColor: themeStore.isDark ? '#1f2937' : '#fff',
+      borderColor: themeStore.isDark ? '#374151' : '#e5e7eb',
+      textStyle: {
+        color: textColor.value
       }
     },
     legend: {
       data: ['挂号数量'],
-      top: 50
+      top: 50,
+      textStyle: {
+        color: textColor.value
+      }
     },
     grid: {
       left: '3%',
@@ -79,17 +92,42 @@ const initChart = () => {
       axisLabel: {
         interval: 'auto',
         rotate: 0,
-        fontSize: 12
+        fontSize: 12,
+        color: textColor.value
+      },
+      axisLine: {
+        lineStyle: {
+          color: themeStore.isDark ? '#374151' : '#e5e7eb'
+        }
       },
       name: props.xAxisLabel,
       nameLocation: 'middle',
-      nameGap: 35
+      nameGap: 35,
+      nameTextStyle: {
+        color: textColor.value
+      }
     },
     yAxis: {
       type: 'value',
       name: props.yAxisLabel,
       nameLocation: 'middle',
-      nameGap: 50
+      nameGap: 50,
+      nameTextStyle: {
+        color: textColor.value
+      },
+      axisLabel: {
+        color: textColor.value
+      },
+      axisLine: {
+        lineStyle: {
+          color: themeStore.isDark ? '#374151' : '#e5e7eb'
+        }
+      },
+      splitLine: {
+        lineStyle: {
+          color: themeStore.isDark ? '#374151' : '#e5e7eb'
+        }
+      }
     },
     series: [
       {
@@ -134,6 +172,12 @@ watch(() => props.data, () => {
     initChart()
   }
 }, { deep: true })
+
+watch(() => themeStore.isDark, () => {
+  if (chartInstance) {
+    initChart()
+  }
+})
 
 onMounted(() => {
   initChart()

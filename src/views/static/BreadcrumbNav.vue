@@ -1,5 +1,5 @@
 <template>
-  <nav class="bg-white rounded-lg shadow-sm px-4 py-3 mb-6">
+  <nav class="bg-white dark:bg-gray-800 rounded-lg shadow-sm px-4 py-3 mb-6">
     <ol class="flex items-center space-x-2 text-sm">
       <li 
         v-for="(item, index) in breadcrumbs" 
@@ -9,17 +9,17 @@
         <button
           v-if="index < breadcrumbs.length - 1"
           @click="handleClick(item, index)"
-          class="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+          class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors"
         >
           {{ item.name }}
         </button>
-        <span v-else class="text-gray-700 font-medium">
+        <span v-else class="text-gray-700 dark:text-gray-300 font-medium">
           {{ item.name }}
         </span>
         
         <svg
           v-if="index < breadcrumbs.length - 1"
-          class="w-4 h-4 mx-2 text-gray-400"
+          class="w-4 h-4 mx-2 text-gray-400 dark:text-gray-500"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
