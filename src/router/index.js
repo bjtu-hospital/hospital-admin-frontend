@@ -43,6 +43,11 @@ const routes = [
         name: "Rules",
         component: () => import("@/views/rules/Rules.vue"),
       },
+      {
+        path: "static",
+        name: "Static",
+        component: () => import("@/views/static/StaticView.vue"),
+      },
     ],
   },
 ]

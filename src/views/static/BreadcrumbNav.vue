@@ -1,0 +1,63 @@
+<template>
+  <nav class="bg-white rounded-lg shadow-sm px-4 py-3 mb-6">
+    <ol class="flex items-center space-x-2 text-sm">
+      <li 
+        v-for="(item, index) in breadcrumbs" 
+        :key="index"
+        class="flex items-center"
+      >
+        <button
+          v-if="index < breadcrumbs.length - 1"
+          @click="handleClick(item, index)"
+          class="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+        >
+          {{ item.name }}
+        </button>
+        <span v-else class="text-gray-700 font-medium">
+          {{ item.name }}
+        </span>
+        
+        <svg
+          v-if="index < breadcrumbs.length - 1"
+          class="w-4 h-4 mx-2 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 5l7 7-7 7"
+          />
+        </svg>
+      </li>
+    </ol>
+  </nav>
+</template>
+
+<script setup>
+import { computed } from 'vue'
+
+const props = defineProps({
+  items: {
+    type: Array,
+    required: true,
+    default: () => []
+  }
+})
+
+const emit = defineEmits(['navigate'])
+
+const breadcrumbs = computed(() => props.items)
+
+const handleClick = (item, index) => {
+  emit('navigate', { item, index })
+}
+</script>
+
+<style scoped>
+button:focus {
+  outline: none;
+}
+</style>
