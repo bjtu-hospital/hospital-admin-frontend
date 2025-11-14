@@ -1,5 +1,4 @@
-// Mock 数据开关
-export const USE_MOCK = true
+
 
 // 生成某个范围内的随机日期 ISO 字符串
 const randomDateInPastDays = (days = 120) => {

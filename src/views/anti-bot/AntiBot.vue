@@ -36,6 +36,21 @@
                 {{ pagination.total }}
               </span>
             </button>
+            <button
+              @click="userType = 'banned'"
+              :class="[
+                'px-4 py-2 rounded-md font-medium transition-all duration-200 flex items-center gap-2',
+                userType === 'banned'
+                  ? 'bg-orange-500 text-white shadow-sm'
+                  : 'bg-accent/50 text-foreground/70 hover:bg-accent hover:text-foreground'
+              ]"
+            >
+              <Lock class="w-4 h-4" />
+              已封禁用户
+              <span v-if="userType === 'banned'" class="px-2 py-0.5 bg-white/20 rounded text-xs">
+                {{ pagination.total }}
+              </span>
+            </button>
           </div>
         </div>
 
@@ -60,6 +75,9 @@
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 风险等级
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                风险评分
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 封禁状态
@@ -118,6 +136,16 @@
                   ]"
                 >
                   {{ user.risk_level }}
+                </div>
+              </td>
+
+              <!-- 风险评分 -->
+              <td class="px-6 py-4">
+                <div class="text-sm font-medium text-foreground">
+                  <span v-if="user.risk_score !== null && user.risk_score !== undefined">
+                    {{ user.risk_score }}
+                  </span>
+                  <span v-else class="text-muted-foreground">-</span>
                 </div>
               </td>
 
@@ -254,6 +282,17 @@
                 >
                   {{ selectedDetailUser?.risk_level }}
                 </div>
+              </div>
+            </div>
+
+            <!-- 风险评分 -->
+            <div>
+              <h4 class="text-sm font-medium text-foreground mb-2">风险评分</h4>
+              <div class="text-lg font-semibold text-foreground">
+                <span v-if="selectedDetailUser?.risk_score !== null && selectedDetailUser?.risk_score !== undefined">
+                  {{ selectedDetailUser?.risk_score }} 分
+                </span>
+                <span v-else class="text-muted-foreground text-sm font-normal">暂无评分</span>
               </div>
             </div>
 
@@ -476,13 +515,22 @@
 
               <!-- 封禁原因 -->
               <div>
-                <label class="block text-sm font-medium text-foreground mb-2">封禁原因</label>
+                <label class="block text-sm font-medium text-foreground mb-2">
+                  封禁原因 *
+                  <span class="text-xs text-muted-foreground ml-2">
+                    (至少 10 个字符，当前 {{ banForm.reason.length }} 个)
+                  </span>
+                </label>
                 <textarea
                   v-model="banForm.reason"
                   rows="3"
-                  placeholder="请输入封禁原因（选填）"
+                  placeholder="请输入封禁原因（至少10个字符）"
                   class="w-full px-3 py-2 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                  :class="banForm.reason.length > 0 && banForm.reason.length < 10 ? 'border-red-500' : ''"
                 ></textarea>
+                <p v-if="banForm.reason.length > 0 && banForm.reason.length < 10" class="text-xs text-red-500 mt-1">
+                  封禁原因至少需要 10 个字符
+                </p>
               </div>
             </div>
           </div>
@@ -497,7 +545,7 @@
             </button>
             <button
               @click="handleBanAction"
-              :disabled="isSubmitting"
+              :disabled="isSubmitting || (selectedUser?.ban_status === '未封禁' && banForm.reason.length < 10)"
               :class="[
                 'px-4 py-2 rounded-md font-medium transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed',
                 selectedUser?.ban_status === '未封禁'
@@ -523,7 +571,7 @@ import { useToast } from '@/utils/toast'
 const { success, error } = useToast()
 
 // 用户类型
-const userType = ref('high_risk') // 'high_risk' | 'normal'
+const userType = ref('high_risk') // 'high_risk' | 'normal' | 'banned'
 
 // 用户列表
 const users = ref([])
@@ -553,25 +601,74 @@ const banForm = reactive({
   reason: ''
 })
 
+// 将后端的 risk_level 转换为中文
+const formatRiskLevel = (level) => {
+  if (!level) return '暂无评级'
+  const upperLevel = level.toUpperCase()
+  const map = { 'HIGH': '高危', 'MEDIUM': '中危', 'LOW': '低危' }
+  return map[upperLevel] || '暂无评级'
+}
+
+// 将后端的 banned 和 ban_type 转换为 ban_status
+const formatBanStatus = (banned, ban_type) => {
+  if (!banned || !ban_type) return '未封禁'
+  const map = { 'register': '禁止挂号', 'login': '禁止登录', 'all': '完全封禁' }
+  return map[ban_type] || '未封禁'
+}
+
 // 加载用户列表
 const loadUsers = async () => {
   isLoading.value = true
   try {
-    const response = await getUsers({
-      user_type: userType.value,
+    const params = {
       page: pagination.page,
       page_size: pagination.pageSize
-    })
+    }
+    
+    // 根据用户类型设置筛选条件
+    if (userType.value === 'high_risk') {
+      params.user_type = 'high'
+    } else if (userType.value === 'normal') {
+      params.user_type = 'normal'
+    } else if (userType.value === 'banned') {
+      params.user_type = 'banned'
+    }
+    
+    console.log('[AntiBot] 请求参数:', params)
+    const response = await getUsers(params)
+    console.log('[AntiBot] 原始响应:', response)
+    console.log('[AntiBot] 响应 code:', response.code)
+    console.log('[AntiBot] 响应 message:', response.message)
 
     if (response.code === 0) {
-      users.value = response.message.users || []
+      // 转换后端数据格式为前端需要的格式
+      const rawUsers = response.message.users || []
+      console.log('[AntiBot] 原始用户数据:', rawUsers)
+      users.value = rawUsers.map(user => ({
+        user_id: user.user_id,
+        name: user.username, // 使用 username 作为 name
+        phone: user.username, // 暂时使用 username，后端可能需要提供真实的 phone
+        risk_level: formatRiskLevel(user.risk_level),
+        risk_score: user.risk_score, // 保留风险评分
+        ban_status: formatBanStatus(user.banned, user.ban_type),
+        ban_end_time: user.ban_until,
+        last_active: new Date().toISOString(), // 后端未提供，使用当前时间
+        risk_reason: '系统检测', // 后端未提供
+        // 保留原始数据
+        _raw: user
+      }))
+      console.log('[AntiBot] 转换后的用户数据:', users.value)
       pagination.total = response.message.total || 0
-      pagination.totalPages = response.message.total_pages || 0
+      pagination.totalPages = response.message.page_size ? Math.ceil(response.message.total / response.message.page_size) : 0
+      console.log('[AntiBot] 分页信息:', { total: pagination.total, totalPages: pagination.totalPages })
+      console.log('[AntiBot] ✅ 用户列表加载成功')
     } else {
+      console.error('[AntiBot] ❌ 响应 code 不为 0:', response.code, response.message)
       error('加载用户列表失败')
     }
   } catch (err) {
-    console.error('Load users error:', err)
+    console.error('[AntiBot] ❌ 加载用户列表异常:', err)
+    console.error('[AntiBot] 错误堆栈:', err.stack)
     error('加载用户列表失败')
   } finally {
     isLoading.value = false
@@ -661,12 +758,19 @@ const closeBanDialog = () => {
 const handleBanAction = async () => {
   if (!selectedUser.value) return
 
+  // 封禁时验证原因长度
+  if (selectedUser.value.ban_status === '未封禁') {
+    if (!banForm.reason || banForm.reason.trim().length < 10) {
+      error('封禁原因至少需要 10 个字符')
+      return
+    }
+  }
+
   isSubmitting.value = true
   try {
     if (selectedUser.value.ban_status === '未封禁') {
       // 执行封禁
-      const response = await banUser({
-        user_id: selectedUser.value.user_id,
+      const response = await banUser(selectedUser.value.user_id, {
         ban_type: banForm.ban_type,
         duration_days: banForm.duration_days,
         reason: banForm.reason
@@ -681,8 +785,8 @@ const handleBanAction = async () => {
       }
     } else {
       // 执行解封
-      const response = await unbanUser({
-        user_id: selectedUser.value.user_id
+      const response = await unbanUser(selectedUser.value.user_id, {
+        reason: '管理员解封'
       })
 
       if (response.code === 0) {
