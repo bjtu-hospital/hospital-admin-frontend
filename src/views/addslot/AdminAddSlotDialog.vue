@@ -185,6 +185,8 @@
     <DoctorSelectorDialog
       :is-open="doctorSelectorOpen"
       :selected-id="formData.doctor_id"
+      :doctors="props.doctors"
+      :is-loading="props.isLoadingData"
       @close="doctorSelectorOpen = false"
       @select="handleDoctorSelect"
     />
@@ -193,6 +195,8 @@
     <PatientSelectorDialog
       :is-open="patientSelectorOpen"
       :selected-id="formData.patient_id"
+      :patients="props.patients"
+      :is-loading="props.isLoadingData"
       @close="patientSelectorOpen = false"
       @select="handlePatientSelect"
     />
@@ -208,6 +212,18 @@ import PatientSelectorDialog from './PatientSelectorDialog.vue'
 
 const props = defineProps({
   isOpen: {
+    type: Boolean,
+    default: false
+  },
+  doctors: {
+    type: Array,
+    default: () => []
+  },
+  patients: {
+    type: Array,
+    default: () => []
+  },
+  isLoadingData: {
     type: Boolean,
     default: false
   }
@@ -314,10 +330,10 @@ const handleSubmit = async () => {
   
   try {
     const response = await createAdminAddSlot({
-      doctor_id: formData.doctor_id,
       schedule_id: formData.schedule_id,
+      patient_id: formData.patient_id,
       slot_type: formData.slot_type,
-      patient_id: formData.patient_id
+      reason: "管理员直接加号"
     })
     
     if (response.code === 0) {

@@ -47,6 +47,8 @@ const routes = [
         path: "anti-bot",
         name: "AntiBot",
         component: () => import("@/views/anti-bot/AntiBot.vue"),
+      },
+      {
         path: "static",
         name: "Static",
         component: () => import("@/views/static/StaticView.vue"),

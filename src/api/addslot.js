@@ -114,14 +114,15 @@ export async function getPatients(params) {
 }
 
 /**
- * 管理员直接创建加号
- * POST /admin/schedules/add-slot
+ * 管理员直接创建加号（跳过审核）
+ * POST /doctor/schedules/add-slot
+ * 管理员调用此接口会直接创建挂号记录，跳过审批流程
  */
 export async function createAdminAddSlot(data) {
     if (USE_MOCK) {
         return createMockAdminAddSlot(data)
     }
 
-    const response = await axios.post('/admin/schedules/add-slot', data)
+    const response = await axios.post('/doctor/schedules/add-slot', data)
     return response.data
 }

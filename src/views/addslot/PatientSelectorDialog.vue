@@ -41,12 +41,12 @@
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
             加载中...
           </div>
-          <div v-else-if="patients.length === 0" class="p-8 text-center text-muted-foreground">
-            暂无患者数据
+          <div v-else-if="filteredPatients.length === 0" class="p-8 text-center text-muted-foreground">
+            {{ searchQuery.name || searchQuery.phone ? '没有找到匹配的患者' : '暂无患者数据' }}
           </div>
           <div v-else class="space-y-2 max-h-96 overflow-y-auto">
             <button
-              v-for="patient in patients"
+              v-for="patient in filteredPatients"
               :key="patient.patient_id"
               type="button"
               @click="handleSelect(patient)"
@@ -94,8 +94,6 @@
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
 import { X } from 'lucide-vue-next'
-import { getPatients } from '@/api/addslot'
-import { useToast } from '@/utils/toast'
 
 const props = defineProps({
   isOpen: {
@@ -105,20 +103,25 @@ const props = defineProps({
   selectedId: {
     type: Number,
     default: null
+  },
+  patients: {
+    type: Array,
+    default: () => []
+  },
+  isLoading: {
+    type: Boolean,
+    default: false
   }
 })
 
 const emit = defineEmits(['close', 'select'])
-const { error } = useToast()
 
 const searchQuery = reactive({ name: '', phone: '' })
-const allPatients = ref([])
-const isLoading = ref(false)
 const selectedPatient = ref(null)
 
 // 使用 computed 实现实时过滤
-const patients = computed(() => {
-  let result = allPatients.value
+const filteredPatients = computed(() => {
+  let result = props.patients
   
   // 按姓名过滤
   if (searchQuery.name) {
@@ -128,7 +131,7 @@ const patients = computed(() => {
   
   // 按手机号过滤
   if (searchQuery.phone) {
-    result = result.filter(p => p.phone.includes(searchQuery.phone))
+    result = result.filter(p => p.phone_number?.includes(searchQuery.phone))
   }
   
   return result
@@ -139,32 +142,14 @@ watch(() => props.isOpen, (newVal) => {
     searchQuery.name = ''
     searchQuery.phone = ''
     selectedPatient.value = null
-    loadPatients()
   }
 })
 
 watch(() => props.selectedId, (newVal) => {
-  if (newVal && allPatients.value.length > 0) {
-    selectedPatient.value = allPatients.value.find(p => p.patient_id === newVal)
+  if (newVal && props.patients.length > 0) {
+    selectedPatient.value = props.patients.find(p => p.patient_id === newVal)
   }
 })
-
-const loadPatients = async () => {
-  isLoading.value = true
-  try {
-    const response = await getPatients({})
-    if (response.code === 0) {
-      allPatients.value = response.message.patients || []
-    } else {
-      error('加载患者列表失败')
-    }
-  } catch (err) {
-    console.error('Load patients error:', err)
-    error('加载患者列表失败')
-  } finally {
-    isLoading.value = false
-  }
-}
 
 const handleSelect = (patient) => {
   selectedPatient.value = patient

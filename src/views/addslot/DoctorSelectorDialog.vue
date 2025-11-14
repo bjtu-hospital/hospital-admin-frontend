@@ -35,12 +35,12 @@
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
             加载中...
           </div>
-          <div v-else-if="doctors.length === 0" class="p-8 text-center text-muted-foreground">
-            暂无医生数据
+          <div v-else-if="filteredDoctors.length === 0" class="p-8 text-center text-muted-foreground">
+            {{ searchQuery ? '没有找到匹配的医生' : '暂无医生数据' }}
           </div>
           <div v-else class="space-y-2 max-h-96 overflow-y-auto">
             <button
-              v-for="doctor in doctors"
+              v-for="doctor in filteredDoctors"
               :key="doctor.doctor_id"
               type="button"
               @click="handleSelect(doctor)"
@@ -88,8 +88,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { X } from 'lucide-vue-next'
-import { getDoctors } from '@/api/addslot'
-import { useToast } from '@/utils/toast'
 
 const props = defineProps({
   isOpen: {
@@ -99,25 +97,30 @@ const props = defineProps({
   selectedId: {
     type: Number,
     default: null
+  },
+  doctors: {
+    type: Array,
+    default: () => []
+  },
+  isLoading: {
+    type: Boolean,
+    default: false
   }
 })
 
 const emit = defineEmits(['close', 'select'])
-const { error } = useToast()
 
 const searchQuery = ref('')
-const allDoctors = ref([])
-const isLoading = ref(false)
 const selectedDoctor = ref(null)
 
 // 使用 computed 实现实时过滤
-const doctors = computed(() => {
+const filteredDoctors = computed(() => {
   if (!searchQuery.value) {
-    return allDoctors.value
+    return props.doctors
   }
   
   const keyword = searchQuery.value.toLowerCase()
-  return allDoctors.value.filter(doctor =>
+  return props.doctors.filter(doctor =>
     doctor.name.toLowerCase().includes(keyword) ||
     doctor.department_name?.toLowerCase().includes(keyword) ||
     doctor.title?.toLowerCase().includes(keyword) ||
@@ -129,32 +132,14 @@ watch(() => props.isOpen, (newVal) => {
   if (newVal) {
     searchQuery.value = ''
     selectedDoctor.value = null
-    loadDoctors()
   }
 })
 
 watch(() => props.selectedId, (newVal) => {
-  if (newVal && allDoctors.value.length > 0) {
-    selectedDoctor.value = allDoctors.value.find(d => d.doctor_id === newVal)
+  if (newVal && props.doctors.length > 0) {
+    selectedDoctor.value = props.doctors.find(d => d.doctor_id === newVal)
   }
 })
-
-const loadDoctors = async () => {
-  isLoading.value = true
-  try {
-    const response = await getDoctors({})
-    if (response.code === 0) {
-      allDoctors.value = response.message.doctors || []
-    } else {
-      error('加载医生列表失败')
-    }
-  } catch (err) {
-    console.error('Load doctors error:', err)
-    error('加载医生列表失败')
-  } finally {
-    isLoading.value = false
-  }
-}
 
 const handleSelect = (doctor) => {
   selectedDoctor.value = doctor
