@@ -25,10 +25,10 @@ export const deleteMajorDepartment = (id) => {
     return axios.delete(`/admin/major-departments/${id}`)
 }
 
-// // 获取所有详细科室
-// export const getMinorDepartments = () => {
-//     return axios.get("/admin/minor-departments")
-// }
+// 获取小科室列表（支持按大科室过滤）
+export const getMinorDepartments = (params = {}) => {
+    return axios.get("/admin/minor-departments", { params })
+}
 
 // 新增详细科室
 export const createMinorDepartment = (data) => {

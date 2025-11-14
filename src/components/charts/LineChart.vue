@@ -1,0 +1,208 @@
+<template>
+  <div ref="chartRef" :style="{ width: width, height: height }"></div>
+</template>
+
+<script setup>
+import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
+import * as echarts from 'echarts'
+import { useThemeStore } from '@/stores/theme'
+
+const props = defineProps({
+  data: {
+    type: Array,
+    required: true,
+    default: () => []
+  },
+  width: {
+    type: String,
+    default: '100%'
+  },
+  height: {
+    type: String,
+    default: '400px'
+  },
+  title: {
+    type: String,
+    default: ''
+  },
+  xAxisLabel: {
+    type: String,
+    default: '日期'
+  },
+  yAxisLabel: {
+    type: String,
+    default: '挂号数量'
+  }
+})
+
+const chartRef = ref(null)
+let chartInstance = null
+const themeStore = useThemeStore()
+
+const textColor = computed(() => themeStore.isDark ? '#e5e7eb' : '#374151')
+
+const initChart = () => {
+  if (!chartRef.value) return
+
+  // Dispose existing instance to prevent duplicate initialization
+  if (chartInstance) {
+    chartInstance.dispose()
+    chartInstance = null
+  }
+
+  chartInstance = echarts.init(chartRef.value)
+  
+  // Handle empty data
+  const chartData = props.data || []
+  const hasData = chartData.length > 0
+  
+  const option = {
+    title: {
+      text: props.title,
+      left: 'center',
+      top: 20,
+      textStyle: {
+        fontSize: 16,
+        fontWeight: 'normal',
+        color: textColor.value
+      }
+    },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'cross',
+        label: {
+          backgroundColor: themeStore.isDark ? '#1f2937' : '#6a7985'
+        }
+      },
+      backgroundColor: themeStore.isDark ? '#1f2937' : '#fff',
+      borderColor: themeStore.isDark ? '#374151' : '#e5e7eb',
+      textStyle: {
+        color: textColor.value
+      }
+    },
+    legend: {
+      data: ['挂号数量'],
+      top: 50,
+      textStyle: {
+        color: textColor.value
+      }
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '10%',
+      top: '100px',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      boundaryGap: false,
+      data: chartData.map(item => item.date || ''),
+      axisLabel: {
+        interval: 'auto',
+        rotate: 0,
+        fontSize: 12,
+        color: textColor.value
+      },
+      axisLine: {
+        lineStyle: {
+          color: themeStore.isDark ? '#374151' : '#e5e7eb'
+        }
+      },
+      name: props.xAxisLabel,
+      nameLocation: 'middle',
+      nameGap: 35,
+      nameTextStyle: {
+        color: textColor.value
+      }
+    },
+    yAxis: {
+      type: 'value',
+      name: props.yAxisLabel,
+      nameLocation: 'middle',
+      nameGap: 50,
+      nameTextStyle: {
+        color: textColor.value
+      },
+      axisLabel: {
+        color: textColor.value
+      },
+      axisLine: {
+        lineStyle: {
+          color: themeStore.isDark ? '#374151' : '#e5e7eb'
+        }
+      },
+      splitLine: {
+        lineStyle: {
+          color: themeStore.isDark ? '#374151' : '#e5e7eb'
+        }
+      }
+    },
+    series: [
+      {
+        name: props.yAxisLabel,
+        type: 'line',
+        smooth: true,
+        data: chartData.map(item => item.value || 0),
+        itemStyle: {
+          color: '#5470c6'
+        },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(84, 112, 198, 0.5)' },
+            { offset: 1, color: 'rgba(84, 112, 198, 0.1)' }
+          ])
+        },
+        emphasis: {
+          focus: 'series'
+        },
+        // Only add markPoint and markLine if we have sufficient data
+        ...(hasData && chartData.length > 1 ? {
+          markPoint: {
+            data: [
+              { type: 'max', name: '最大值' },
+              { type: 'min', name: '最小值' }
+            ]
+          },
+          markLine: {
+            data: [{ type: 'average', name: '平均值' }]
+          }
+        } : {})
+      }
+    ]
+  }
+
+  chartInstance.setOption(option)
+}
+
+const resizeChart = () => {
+  chartInstance?.resize()
+}
+
+watch(() => props.data, () => {
+  if (chartInstance) {
+    initChart()
+  }
+}, { deep: true })
+
+watch(() => themeStore.isDark, () => {
+  if (chartInstance) {
+    initChart()
+  }
+})
+
+onMounted(() => {
+  initChart()
+  window.addEventListener('resize', resizeChart)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', resizeChart)
+  chartInstance?.dispose()
+})
+</script>
+
+<style scoped>
+/* ECharts container styles */
+</style>
