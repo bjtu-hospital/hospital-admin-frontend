@@ -94,10 +94,11 @@ const mockPatients = [
 ]
 
 // 门诊类型与可用号源类型映射
+// clinic_type: 0=普通门诊, 1=专家门诊(国疗), 2=特需门诊
 const clinicTypeSlotMap = {
-    '普通门诊': ['普通'],
-    '专家门诊': ['普通', '专家'],
-    '特需门诊': ['普通', '专家', '特需']
+    0: ['普通'],
+    1: ['普通', '专家'],
+    2: ['普通', '专家', '特需']
 }
 
 /**
@@ -148,35 +149,39 @@ export function getMockDoctorSchedulesToday(doctorId) {
             const schedules = [
                 {
                     schedule_id: 100 + doctorId,
-                    doctor_id: doctorId,
-                    doctor_name: doctor.name,
-                    department_id: doctor.department_id,
-                    department_name: doctor.department_name,
-                    clinic_type: '专家门诊',
-                    date: '2025-11-13',
-                    time_slot: '上午',
+                    time_section: '上午',
+                    clinic_id: 5,
+                    clinic_name: '心内科门诊',
+                    clinic_type: 1, // 0=普通门诊, 1=专家门诊, 2=特需门诊
+                    minor_dept_name: doctor.department_name,
+                    slot_type: '专家',
                     total_slots: 20,
                     remaining_slots: 5,
-                    available_slot_types: clinicTypeSlotMap['专家门诊']
+                    price: 120.00,
+                    status: '正常',
+                    available_slot_types: ['普通', '专家']
                 },
                 {
                     schedule_id: 200 + doctorId,
-                    doctor_id: doctorId,
-                    doctor_name: doctor.name,
-                    department_id: doctor.department_id,
-                    department_name: doctor.department_name,
-                    clinic_type: '普通门诊',
-                    date: '2025-11-13',
-                    time_slot: '下午',
+                    time_section: '下午',
+                    clinic_id: 6,
+                    clinic_name: '普通门诊',
+                    clinic_type: 0,
+                    minor_dept_name: doctor.department_name,
+                    slot_type: '普通',
                     total_slots: 30,
                     remaining_slots: 12,
-                    available_slot_types: clinicTypeSlotMap['普通门诊']
+                    price: 60.00,
+                    status: '正常',
+                    available_slot_types: ['普通']
                 }
             ]
 
             resolve({
                 code: 0,
                 message: {
+                    doctor_id: doctorId,
+                    date: '2025-11-14',
                     schedules
                 }
             })

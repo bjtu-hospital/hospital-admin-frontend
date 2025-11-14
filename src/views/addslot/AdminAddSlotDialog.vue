@@ -82,7 +82,7 @@
             >
               <option :value="null">请选择排班</option>
               <option v-for="schedule in schedules" :key="schedule.schedule_id" :value="schedule.schedule_id">
-                {{ schedule.department_name }} - {{ schedule.clinic_type }} - {{ schedule.time_slot }}
+                {{ schedule.clinic_name }} - {{ getClinicTypeText(schedule.clinic_type) }} - {{ schedule.time_section }}
                 (余号: {{ schedule.remaining_slots }}/{{ schedule.total_slots }})
               </option>
             </select>
@@ -92,7 +92,7 @@
                 class="px-2 py-0.5 rounded-full text-xs font-medium"
                 :class="getClinicTypeClass(selectedSchedule.clinic_type)"
               >
-                {{ selectedSchedule.clinic_type }}
+                {{ getClinicTypeText(selectedSchedule.clinic_type) }}
               </span>
             </div>
           </div>
@@ -353,10 +353,20 @@ const handleClose = () => {
 // 获取门诊类型样式
 const getClinicTypeClass = (type) => {
   const classMap = {
-    '普通门诊': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    '专家门诊': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-    '特需门诊': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
+    0: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+    1: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+    2: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
   }
   return classMap[type] || 'bg-gray-100 text-gray-800'
+}
+
+// 获取门诊类型文本
+const getClinicTypeText = (type) => {
+  const textMap = {
+    0: '普通门诊',
+    1: '专家门诊',
+    2: '特需门诊'
+  }
+  return textMap[type] || '未知'
 }
 </script>

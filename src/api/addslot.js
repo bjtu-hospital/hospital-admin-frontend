@@ -11,7 +11,7 @@ import {
 } from '@/views/addslot/mock'
 
 // 是否使用 Mock 数据
-const USE_MOCK = true
+const USE_MOCK = false
 
 /**
  * 医生/管理员发起加号
@@ -36,20 +36,20 @@ export async function getAddSlotAudits() {
         return getMockAddSlotAudits()
     }
 
-    const response = await axios.get('/audit/add-slot')
+    const response = await axios.get('/admin/audit/add-slot')
     return response.data
 }
 
 /**
  * 管理员审批通过加号申请
- * POST /audit/add-slot/{audit_id}/approve
+ * POST /admin/audit/add-slot/{audit_id}/approve
  */
 export async function approveAddSlot(auditId, comment) {
     if (USE_MOCK) {
         return approveMockAddSlot(auditId, comment)
     }
 
-    const response = await axios.post(`/audit/add-slot/${auditId}/approve`, {
+    const response = await axios.post(`/admin/audit/add-slot/${auditId}/approve`, {
         comment
     })
     return response.data
@@ -57,55 +57,59 @@ export async function approveAddSlot(auditId, comment) {
 
 /**
  * 管理员拒绝加号申请
- * POST /audit/add-slot/{audit_id}/reject
+ * POST /admin/audit/add-slot/{audit_id}/reject
  */
 export async function rejectAddSlot(auditId, comment) {
     if (USE_MOCK) {
         return rejectMockAddSlot(auditId, comment)
     }
 
-    const response = await axios.post(`/audit/add-slot/${auditId}/reject`, {
+    const response = await axios.post(`/admin/audit/add-slot/${auditId}/reject`, {
         comment
     })
     return response.data
 }
 
 /**
- * 获取所有医生
- * GET /doctors
+ * 搜索医生（用于管理员选择医生）
+ * GET /admin/doctors?name={name}
+ * 支持按姓名模糊搜索
  */
 export async function getDoctors(params) {
     if (USE_MOCK) {
         return getMockDoctors(params)
     }
 
-    const response = await axios.get('/doctors', { params })
+    const response = await axios.get('/admin/doctors', { params })
     return response.data
 }
 
 /**
  * 根据医生ID获取当日排班
- * GET /doctors/{doctor_id}/schedules/today
+ * GET /admin/doctors/{doctor_id}/schedules/today
  */
 export async function getDoctorSchedulesToday(doctorId) {
     if (USE_MOCK) {
         return getMockDoctorSchedulesToday(doctorId)
     }
 
-    const response = await axios.get(`/doctors/${doctorId}/schedules/today`)
+    const response = await axios.get(`/admin/doctors/${doctorId}/schedules/today`)
     return response.data
 }
 
 /**
- * 查询患者
- * GET /patients
+ * 搜索患者信息
+ * GET /admin/patients?name={name}&phone={phone}&patient_id={patient_id}
+ * 支持按姓名、手机号模糊搜索，或患者ID精确查询
+ * 参数：name (string, optional), phone (string, optional), patient_id (int, optional)
+ * 至少提供一个搜索条件
  */
 export async function getPatients(params) {
     if (USE_MOCK) {
         return getMockPatients(params)
     }
 
-    const response = await axios.get('/patients', { params })
+    const response = await axios.get('/admin/patients', { params })
     return response.data
 }
 
