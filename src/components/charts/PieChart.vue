@@ -37,6 +37,12 @@ const borderColor = computed(() => themeStore.isDark ? '#1f2937' : '#fff')
 const initChart = () => {
   if (!chartRef.value) return
 
+  // Dispose existing instance to prevent duplicate initialization
+  if (chartInstance) {
+    chartInstance.dispose()
+    chartInstance = null
+  }
+
   chartInstance = echarts.init(chartRef.value)
   
   const option = {

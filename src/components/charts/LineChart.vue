@@ -44,7 +44,17 @@ const textColor = computed(() => themeStore.isDark ? '#e5e7eb' : '#374151')
 const initChart = () => {
   if (!chartRef.value) return
 
+  // Dispose existing instance to prevent duplicate initialization
+  if (chartInstance) {
+    chartInstance.dispose()
+    chartInstance = null
+  }
+
   chartInstance = echarts.init(chartRef.value)
+  
+  // Handle empty data
+  const chartData = props.data || []
+  const hasData = chartData.length > 0
   
   const option = {
     title: {
@@ -88,7 +98,7 @@ const initChart = () => {
     xAxis: {
       type: 'category',
       boundaryGap: false,
-      data: props.data.map(item => item.date),
+      data: chartData.map(item => item.date || ''),
       axisLabel: {
         interval: 'auto',
         rotate: 0,
@@ -134,7 +144,7 @@ const initChart = () => {
         name: props.yAxisLabel,
         type: 'line',
         smooth: true,
-        data: props.data.map(item => item.value),
+        data: chartData.map(item => item.value || 0),
         itemStyle: {
           color: '#5470c6'
         },
@@ -147,15 +157,18 @@ const initChart = () => {
         emphasis: {
           focus: 'series'
         },
-        markPoint: {
-          data: [
-            { type: 'max', name: '最大值' },
-            { type: 'min', name: '最小值' }
-          ]
-        },
-        markLine: {
-          data: [{ type: 'average', name: '平均值' }]
-        }
+        // Only add markPoint and markLine if we have sufficient data
+        ...(hasData && chartData.length > 1 ? {
+          markPoint: {
+            data: [
+              { type: 'max', name: '最大值' },
+              { type: 'min', name: '最小值' }
+            ]
+          },
+          markLine: {
+            data: [{ type: 'average', name: '平均值' }]
+          }
+        } : {})
       }
     ]
   }

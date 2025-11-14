@@ -1,117 +1,165 @@
 import request from './axios'
 import {
-    USE_MOCK,
     mockHospitalRegistrations,
     mockAreaRegistrations,
     mockDepartmentRegistrations,
     mockDoctorRegistrations,
     mockDepartmentRanking,
-    mockDoctorRanking
+    mockDoctorRanking,
+    mockUserStatistics,
+    mockVisitStatistics
 } from '@/views/static/statistics-mock'
+
+const USE_MOCK = false
 
 /**
  * 获取医院总体挂号统计
+ * GET /statistics/hospital/registrations
  * @param {Object} params - 查询参数
  * @param {string} params.date - 统计日期 YYYY-MM-DD
  * @param {string} params.date_range - 时间范围: today/7days/30days
  */
-export function getHospitalRegistrations(params) {
+export async function getHospitalRegistrations(params) {
     if (USE_MOCK) {
         return Promise.resolve(mockHospitalRegistrations(params))
     }
-    return request({
-        url: '/admin/statistics/hospital/registrations',
+    const response = await request({
+        url: '/statistics/hospital/registrations',
         method: 'get',
         params
     })
+    return response.data
 }
 
 /**
  * 获取分院区挂号统计
+ * GET /statistics/areas/{area_id}/registrations
  * @param {number} areaId - 院区ID
  * @param {Object} params - 查询参数
  * @param {string} params.date - 统计日期 YYYY-MM-DD
  */
-export function getAreaRegistrations(areaId, params) {
+export async function getAreaRegistrations(areaId, params) {
     if (USE_MOCK) {
         return Promise.resolve(mockAreaRegistrations(areaId, params))
     }
-    return request({
-        url: `/admin/statistics/areas/${areaId}/registrations`,
+    const response = await request({
+        url: `/statistics/areas/${areaId}/registrations`,
         method: 'get',
         params
     })
+    return response.data
 }
 
 /**
  * 获取科室挂号统计
+ * GET /statistics/departments/{minor_dept_id}/registrations
  * @param {number} minorDeptId - 小科室ID
  * @param {Object} params - 查询参数
  * @param {string} params.date - 统计日期 YYYY-MM-DD
  * @param {string} params.date_range - 时间范围: today/7days/30days
  */
-export function getDepartmentRegistrations(minorDeptId, params) {
+export async function getDepartmentRegistrations(minorDeptId, params) {
     if (USE_MOCK) {
         return Promise.resolve(mockDepartmentRegistrations(minorDeptId, params))
     }
-    return request({
-        url: `/admin/statistics/departments/${minorDeptId}/registrations`,
+    const response = await request({
+        url: `/statistics/departments/${minorDeptId}/registrations`,
         method: 'get',
         params
     })
+    return response.data
 }
 
 /**
  * 获取医生挂号统计
+ * GET /statistics/doctors/{doctor_id}/registrations
  * @param {number} doctorId - 医生ID
  * @param {Object} params - 查询参数
  * @param {string} params.date - 统计日期 YYYY-MM-DD
  * @param {string} params.date_range - 时间范围: today/7days/30days
  */
-export function getDoctorRegistrations(doctorId, params) {
+export async function getDoctorRegistrations(doctorId, params) {
     if (USE_MOCK) {
         return Promise.resolve(mockDoctorRegistrations(doctorId, params))
     }
-    return request({
-        url: `/admin/statistics/doctors/${doctorId}/registrations`,
+    const response = await request({
+        url: `/statistics/doctors/${doctorId}/registrations`,
         method: 'get',
         params
     })
+    return response.data
 }
 
 /**
  * 获取科室排行榜
+ * GET /statistics/departments/ranking
  * @param {Object} params - 查询参数
  * @param {string} params.date - 统计日期 YYYY-MM-DD
  * @param {string} params.order_by - 排序依据: registrations/revenue
  * @param {number} params.limit - 返回数量
  */
-export function getDepartmentRanking(params) {
+export async function getDepartmentRanking(params) {
     if (USE_MOCK) {
         return Promise.resolve(mockDepartmentRanking(params))
     }
-    return request({
-        url: '/admin/statistics/departments/ranking',
+    const response = await request({
+        url: '/statistics/departments/ranking',
         method: 'get',
         params
     })
+    return response.data
 }
 
 /**
  * 获取医生排行榜
+ * GET /statistics/doctors/ranking
  * @param {Object} params - 查询参数
- * @param {number} params.dept_id - 限定科室ID
+ * @param {number} params.dept_id - 限定科室ID (可选)
  * @param {string} params.date - 统计日期 YYYY-MM-DD
  * @param {string} params.order_by - 排序依据: registrations/revenue
  * @param {number} params.limit - 返回数量
  */
-export function getDoctorRanking(params) {
+export async function getDoctorRanking(params) {
     if (USE_MOCK) {
         return Promise.resolve(mockDoctorRanking(params))
     }
-    return request({
-        url: '/admin/statistics/doctors/ranking',
+    const response = await request({
+        url: '/statistics/doctors/ranking',
         method: 'get',
         params
     })
+    return response.data
+}
+
+/**
+ * 统计用户数
+ * GET /statistics/users
+ */
+export async function getUserStatistics() {
+    if (USE_MOCK) {
+        return Promise.resolve(mockUserStatistics())
+    }
+    const response = await request({
+        url: '/statistics/users',
+        method: 'get'
+    })
+    return response.data
+}
+
+/**
+ * 统计网站访问量
+ * GET /statistics/visits
+ * @param {Object} params - 查询参数
+ * @param {number} params.compare_days - 对比天数
+ */
+export async function getVisitStatistics(params) {
+    if (USE_MOCK) {
+        return Promise.resolve(mockVisitStatistics(params))
+    }
+    const response = await request({
+        url: '/statistics/visits',
+        method: 'get',
+        params
+    })
+    return response.data
 }

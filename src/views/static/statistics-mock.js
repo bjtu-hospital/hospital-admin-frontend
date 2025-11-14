@@ -1,6 +1,3 @@
-// Mock数据开关 - 设置为true使用mock数据，false使用真实API
-export const USE_MOCK = true
-
 // 生成指定范围的随机数
 const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min
 const randomFloat = (min, max) => parseFloat((Math.random() * (max - min) + min).toFixed(2))
@@ -388,6 +385,47 @@ export const mockDoctorRanking = (params) => {
             date: params?.date || new Date().toISOString().split('T')[0],
             order_by: orderBy,
             ranking
+        }
+    }
+}
+
+/**
+ * 统计用户数
+ * GET /statistics/users
+ */
+export const mockUserStatistics = () => {
+    return {
+        code: 0,
+        message: {
+            total_users: randomInt(5000, 10000),
+            active_users: randomInt(3000, 5000),
+            new_users_today: randomInt(50, 150),
+            new_users_week: randomInt(300, 500)
+        }
+    }
+}
+
+/**
+ * 统计网站访问量
+ * GET /statistics/visits
+ */
+export const mockVisitStatistics = (params) => {
+    const compareDays = params?.compare_days || 7
+    const totalVisits = randomInt(10000, 20000)
+    const previousVisits = randomInt(8000, 15000)
+    const growthPercent = parseFloat((((totalVisits - previousVisits) / previousVisits) * 100).toFixed(2))
+
+    return {
+        code: 0,
+        message: {
+            total_visits: totalVisits,
+            previous_visits: previousVisits,
+            growth_percent: growthPercent,
+            compare_days: compareDays,
+            daily_visits: generateDateSeries(7).map(date => ({
+                date,
+                visits: randomInt(1200, 2500)
+            }))
         }
     }
 }

@@ -50,8 +50,8 @@ export const getDepartmentDoctors = (deptId) => {
             }
         })
     }
-    // 直接使用 getDoctors 并传入 dept_id 参数
-    return getDoctors(deptId)
+    // 直接使用 getDoctors 并传入 dept_id 参数对象
+    return getDoctors({ dept_id: deptId })
 }
 
 // ==================== 门诊相关 ====================

@@ -50,6 +50,12 @@ const textColor = computed(() => themeStore.isDark ? '#e5e7eb' : '#374151')
 const initChart = () => {
   if (!chartRef.value) return
 
+  // Dispose existing instance to prevent duplicate initialization
+  if (chartInstance) {
+    chartInstance.dispose()
+    chartInstance = null
+  }
+
   chartInstance = echarts.init(chartRef.value)
   
   const option = {
@@ -81,7 +87,7 @@ const initChart = () => {
     grid: {
       left: '3%',
       right: '4%',
-      bottom: '10%',
+      bottom: '15%',
       top: '80px',
       containLabel: true
     },
@@ -90,9 +96,11 @@ const initChart = () => {
       data: props.data.map(item => item.name),
       axisLabel: {
         interval: 0,
-        rotate: props.data.length > 10 ? 45 : 0,
-        fontSize: 12,
-        color: textColor.value
+        rotate: props.data.length > 5 ? 30 : 0,
+        fontSize: 11,
+        color: textColor.value,
+        overflow: 'truncate',
+        width: props.data.length > 10 ? 60 : undefined
       },
       axisLine: {
         lineStyle: {
