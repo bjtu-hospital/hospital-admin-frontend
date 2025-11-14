@@ -132,13 +132,25 @@
               </div>
 
               <!-- 默认价格提示 -->
-              <div v-if="priceMode === 'default'" class="p-2 bg-blue-500/10 border border-blue-500/20 rounded text-xs text-blue-600">
-                <span v-if="getDefaultPrice()">
-                  将使用门诊默认价格: ¥{{ getDefaultPrice() }}
-                </span>
-                <span v-else class="text-orange-600">
-                  该门诊尚未设置{{ form.slot_type }}类型的默认价格，将使用系统默认值
-                </span>
+              <div v-if="priceMode === 'default'" class="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                <div v-if="getDefaultPrice()" class="space-y-1">
+                  <div class="flex items-center gap-2 text-sm text-blue-600">
+                    <span class="font-medium">将使用门诊默认价格:</span>
+                    <span class="text-lg font-bold">¥{{ getDefaultPrice() }}</span>
+                  </div>
+                  <div class="text-xs text-blue-600/70">
+                    {{ selectedClinic?.name }} - {{ form.slot_type }}类型
+                  </div>
+                </div>
+                <div v-else class="text-xs text-orange-600">
+                  <div class="font-medium mb-1">⚠️ 该门诊尚未设置{{ form.slot_type }}类型的默认价格</div>
+                  <div>系统将使用以下默认值：</div>
+                  <div class="mt-1 ml-2">
+                    • 普通号: ¥50<br>
+                    • 专家号: ¥100<br>
+                    • 特需号: ¥500
+                  </div>
+                </div>
               </div>
 
               <!-- 自定义价格输入 -->
@@ -273,7 +285,10 @@ const selectedClinic = computed(() => {
 const availableSlotTypes = computed(() => {
   if (!selectedClinic.value) return ['普通', '专家', '特需']
   
-  if (selectedClinic.value.clinic_type === 2) {
+  // 兼容 type 和 clinic_type 字段
+  const clinicType = selectedClinic.value.type ?? selectedClinic.value.clinic_type
+  
+  if (clinicType === 2) {
     // 特需门诊只能是特需
     return ['特需']
   } else {
@@ -290,7 +305,10 @@ const getClinicTypeName = (type) => {
 const handleClinicChange = () => {
   // 当切换门诊时，自动调整类型
   if (selectedClinic.value) {
-    if (selectedClinic.value.clinic_type === 2) {
+    // 兼容 type 和 clinic_type 字段
+    const clinicType = selectedClinic.value.type ?? selectedClinic.value.clinic_type
+    
+    if (clinicType === 2) {
       form.value.slot_type = '特需'
     } else {
       form.value.slot_type = '普通'
@@ -317,7 +335,10 @@ const getDefaultPrice = () => {
 const updatePriceForSlotType = () => {
   if (priceMode.value === 'custom') {
     // 自定义模式：设置建议价格
-    if (selectedClinic.value?.clinic_type === 2) {
+    // 兼容 type 和 clinic_type 字段
+    const clinicType = selectedClinic.value?.type ?? selectedClinic.value?.clinic_type
+    
+    if (clinicType === 2) {
       form.value.price = 500
     } else if (form.value.slot_type === '专家') {
       form.value.price = 100

@@ -1,9 +1,8 @@
 import axios from "./axios"
 
-// 获取医生列表
-export const getDoctors = (deptId = '') => {
-    const url = deptId ? `/admin/doctors?dept_id=${deptId}` : '/admin/doctors'
-    return axios.get(url)
+// 获取医生列表（支持dept_id和name参数过滤）
+export const getDoctors = (params = {}) => {
+    return axios.get('/admin/doctors', { params })
 }
 
 // 创建医生（可选是否同时创建账号）

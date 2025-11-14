@@ -43,6 +43,19 @@ const routes = [
         name: "Rules",
         component: () => import("@/views/rules/Rules.vue"),
       },
+      {
+        path: "anti-bot",
+        name: "AntiBot",
+        component: () => import("@/views/anti-bot/AntiBot.vue"),
+        path: "static",
+        name: "Static",
+        component: () => import("@/views/static/StaticView.vue"),
+      },
+      {
+        path: "addslot",
+        name: "AddSlot",
+        component: () => import("@/views/addslot/AddSlot.vue"),
+      },
     ],
   },
 ]

@@ -54,25 +54,40 @@
               />
             </button>
             <div class="flex-1">
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
                 <h4 class="font-semibold text-foreground">{{ clinic.name }}</h4>
                 <span
                   :class="[
                     'px-2 py-0.5 rounded text-xs font-medium',
-                    clinic.clinic_type === 0
+                    (clinic.type ?? clinic.clinic_type) === 0
                       ? 'bg-blue-500/10 text-blue-600'
-                      : clinic.clinic_type === 1
+                      : (clinic.type ?? clinic.clinic_type) === 1
                       ? 'bg-purple-500/10 text-purple-600'
                       : 'bg-orange-500/10 text-orange-600'
                   ]"
                 >
-                  {{ getClinicTypeName(clinic.clinic_type) }}
+                  {{ getClinicTypeName(clinic.type ?? clinic.clinic_type) }}
                 </span>
                 <span class="text-xs text-muted-foreground">
                   ({{ clinicSchedules[clinic.clinic_id]?.length || 0 }} 条排班)
                 </span>
               </div>
-              <p class="text-xs text-muted-foreground mt-0.5">{{ clinic.address || '未设置地址' }}</p>
+              <div class="flex items-center gap-3 mt-1 flex-wrap">
+                <p class="text-xs text-muted-foreground">{{ clinic.address || '未设置地址' }}</p>
+                <!-- 显示默认价格 -->
+                <div v-if="hasDefaultPrice(clinic)" class="flex items-center gap-2 text-xs">
+                  <span class="text-muted-foreground">默认价格:</span>
+                  <span v-if="clinic.default_price_normal" class="text-blue-600 font-medium">
+                    普通 ¥{{ clinic.default_price_normal }}
+                  </span>
+                  <span v-if="clinic.default_price_expert" class="text-blue-600 font-medium">
+                    专家 ¥{{ clinic.default_price_expert }}
+                  </span>
+                  <span v-if="clinic.default_price_special" class="text-orange-600 font-medium">
+                    特需 ¥{{ clinic.default_price_special }}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
           <button
@@ -413,6 +428,11 @@ const toggleClinic = (clinicId) => {
   expandedClinics.value[clinicId] = !expandedClinics.value[clinicId]
 }
 
+// 检查门诊是否有设置默认价格
+const hasDefaultPrice = (clinic) => {
+  return clinic.default_price_normal || clinic.default_price_expert || clinic.default_price_special
+}
+
 const getClinicTypeName = (type) => {
   const map = { 0: '普通', 1: '国疗', 2: '特需' }
   return map[type] || '未知'
@@ -534,11 +554,14 @@ const handleAddClinic = async () => {
 
 // 打开编辑门诊对话框
 const openEditClinicDialog = (clinic) => {
+  // 兼容 type 和 clinic_type 字段
+  const clinicType = clinic.type ?? clinic.clinic_type
+  
   editClinicForm.value = {
     clinic_id: clinic.clinic_id,
     name: clinic.name,
     address: clinic.address || '',
-    clinic_type: clinic.clinic_type,
+    clinic_type: clinicType,
     default_price_normal: clinic.default_price_normal || null,
     default_price_expert: clinic.default_price_expert || null,
     default_price_special: clinic.default_price_special || null
