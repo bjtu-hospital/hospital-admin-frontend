@@ -20,6 +20,8 @@
     <!-- 加号申请列表 -->
     <AddSlotAuditList
       ref="auditListRef"
+      :doctors="doctors"
+      :patients="patients"
       @audit="handleAudit"
       @view-detail="handleViewDetail"
     />

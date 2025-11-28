@@ -67,7 +67,8 @@
               医生
             </label>
             <p class="text-gray-900 dark:text-white">
-              {{ audit?.doctor_name || `医生${audit?.doctor_id}` }}
+              <span class="font-medium">{{ audit?.doctor_name || '未知医生' }}</span>
+              <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">(ID: {{ audit?.doctor_id }})</span>
             </p>
           </div>
 
@@ -76,7 +77,8 @@
               患者
             </label>
             <p class="text-gray-900 dark:text-white">
-              {{ audit?.patient_name || `患者${audit?.patient_id}` }}
+              <span class="font-medium">{{ audit?.patient_name || '未知患者' }}</span>
+              <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">(ID: {{ audit?.patient_id }})</span>
             </p>
           </div>
 

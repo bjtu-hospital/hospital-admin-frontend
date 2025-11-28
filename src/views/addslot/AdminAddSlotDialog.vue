@@ -40,6 +40,9 @@
                 <div>
                   <div class="text-sm text-gray-900 dark:text-white font-medium">
                     {{ selectedDoctor.name }}
+                    <span class="ml-2 text-xs text-gray-500 dark:text-gray-400 font-normal">
+                      ID: {{ selectedDoctor.doctor_id }}
+                    </span>
                   </div>
                   <div class="text-xs text-gray-600 dark:text-gray-400">
                     {{ selectedDoctor.department_name }} · {{ selectedDoctor.title }}
@@ -82,7 +85,7 @@
             >
               <option :value="null">请选择排班</option>
               <option v-for="schedule in schedules" :key="schedule.schedule_id" :value="schedule.schedule_id">
-                {{ schedule.clinic_name }} - {{ getClinicTypeText(schedule.clinic_type) }} - {{ schedule.time_section }}
+                {{ getClinicTypeText(schedule.clinic_type) }} - {{ schedule.time_slot }} - {{ schedule.date }}
                 (余号: {{ schedule.remaining_slots }}/{{ schedule.total_slots }})
               </option>
             </select>
@@ -139,6 +142,9 @@
                 <div>
                   <div class="text-sm text-gray-900 dark:text-white font-medium">
                     {{ selectedPatient.name }}
+                    <span class="ml-2 text-xs text-gray-500 dark:text-gray-400 font-normal">
+                      ID: {{ selectedPatient.patient_id }}
+                    </span>
                   </div>
                   <div class="text-xs text-gray-600 dark:text-gray-400">
                     {{ selectedPatient.phone }} · {{ selectedPatient.gender }} · {{ selectedPatient.age }}岁
@@ -366,18 +372,23 @@ const handleClose = () => {
   emit('close')
 }
 
-// 获取门诊类型样式
+// 获取门诊类型样式（兼容数字或字符串）
 const getClinicTypeClass = (type) => {
+  const normalized = typeof type === 'number' ? type : (type || '').trim()
   const classMap = {
     0: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
     1: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-    2: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
+    2: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
+    '普通门诊': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+    '专家门诊': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+    '特需门诊': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
   }
-  return classMap[type] || 'bg-gray-100 text-gray-800'
+  return classMap[normalized] || 'bg-gray-100 text-gray-800'
 }
 
-// 获取门诊类型文本
+// 获取门诊类型文本（兼容数字或字符串）
 const getClinicTypeText = (type) => {
+  if (typeof type === 'string') return type || '未知'
   const textMap = {
     0: '普通门诊',
     1: '专家门诊',

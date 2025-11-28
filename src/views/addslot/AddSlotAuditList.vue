@@ -82,10 +82,16 @@
               #{{ audit.audit_id }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-              {{ audit.doctor_name || `医生${audit.doctor_id}` }}
+              <div>
+                <span class="font-medium">{{ getDoctorName(audit.doctor_id, audit.doctor_name) }}</span>
+                <span class="ml-1 text-xs text-gray-500 dark:text-gray-400">(ID: {{ audit.doctor_id }})</span>
+              </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-              {{ audit.patient_name || `患者${audit.patient_id}` }}
+              <div>
+                <span class="font-medium">{{ getPatientName(audit.patient_id, audit.patient_name) }}</span>
+                <span class="ml-1 text-xs text-gray-500 dark:text-gray-400">(ID: {{ audit.patient_id }})</span>
+              </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm">
               <span
@@ -137,12 +143,37 @@ import { ref, computed, onMounted } from 'vue'
 import { getAddSlotAudits } from '@/api/addslot'
 import { useToast } from '@/utils/toast'
 
+const props = defineProps({
+  doctors: {
+    type: Array,
+    default: () => []
+  },
+  patients: {
+    type: Array,
+    default: () => []
+  }
+})
+
 const emit = defineEmits(['audit', 'view-detail'])
 const { error } = useToast()
 
 const audits = ref([])
 const isLoading = ref(false)
 const filterStatus = ref('all')
+
+// 根据医生ID查找医生姓名
+const getDoctorName = (doctorId, fallbackName) => {
+  if (fallbackName) return fallbackName
+  const doctor = props.doctors.find(d => d.doctor_id === doctorId)
+  return doctor?.name || '未知医生'
+}
+
+// 根据患者ID查找患者姓名
+const getPatientName = (patientId, fallbackName) => {
+  if (fallbackName) return fallbackName
+  const patient = props.patients.find(p => p.patient_id === patientId)
+  return patient?.name || '未知患者'
+}
 
 const filteredAudits = computed(() => {
   if (filterStatus.value === 'all') {
