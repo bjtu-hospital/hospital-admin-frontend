@@ -15,6 +15,9 @@ jobs:
           echo "now workspace ${{ github.workspace }}"
           echo "now dic: $(pwd)"
           cd ~
+          echo "now workspace ${{ github.workspace }}"
+          echo "now dic: $(pwd)"
+          
         
       - name: 测试不同step的路径 
         run: echo "now dic >> $(pwd)"
