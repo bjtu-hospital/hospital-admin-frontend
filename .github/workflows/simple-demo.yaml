@@ -1,0 +1,44 @@
+name: Simple CI
+
+on: [push]
+
+jobs:
+  test-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 测试 Context 变量
+        run: |
+          echo "name of repository: ${{ github.repository }}"
+          echo "name of ref(我觉得这个是触发的事件): ${{ github.ref }}"
+          echo "who trigger workflow ${{ github.actor }}"
+          echo "workflow event ${{ github.event_name }}"
+          echo "now workspace ${{ github.workspace }}"
+          echo "now dic: $(pwd)"
+          cd ~
+        
+      - name: 测试不同step的路径 
+        run: echo "now dic >> $(pwd)"
+
+      - name: 检出代码
+        uses: actions/checkout@v5
+      
+      - name: 检查当前的路径  
+        run: |
+          echo "now workspace ${{ github.workspace }}"
+          echo "now dic: $(pwd)"
+      
+      # - name: 设置 node.js 
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: '20'
+      
+      # - name: 安装依赖
+      #   run: npm install
+
+      # - name: 运行测试
+      #   run: npm test
+
+
+
+
+
