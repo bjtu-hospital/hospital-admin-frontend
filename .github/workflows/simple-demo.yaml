@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   test-ci:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: 测试 Context 变量
         run: |
