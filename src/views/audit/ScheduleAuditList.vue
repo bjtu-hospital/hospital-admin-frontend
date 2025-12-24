@@ -1,5 +1,18 @@
 <template>
   <div class="space-y-4">
+    <!-- 搜索栏 -->
+    <div class="flex justify-end">
+      <div class="relative w-64">
+        <Search class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="搜索科室或医生姓名..."
+          class="w-full pl-9 pr-4 py-2 text-sm bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+        />
+      </div>
+    </div>
+
     <!-- 表格 -->
     <div class="bg-card rounded-lg border border-border shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
@@ -105,7 +118,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { FileCheck, FileX } from 'lucide-vue-next'
+import { FileCheck, FileX, Search } from 'lucide-vue-next'
 import { getScheduleAudits } from '@/api/audit'
 import { useToast } from '@/utils/toast'
 
@@ -124,20 +137,39 @@ const toast = useToast()
 const allAudits = ref([]) // 存储所有数据
 const currentPage = ref(1)
 const pageSize = ref(10)
+const searchQuery = ref('')
 
 // 根据 status 筛选的数据
 const filteredAudits = computed(() => {
-  if (props.status === 'all') {
-    return allAudits.value
+  let result = allAudits.value
+  
+  // 状态筛选
+  if (props.status !== 'all') {
+    result = result.filter(item => item.status === props.status)
   }
-  return allAudits.value.filter(item => item.status === props.status)
+  
+  // 搜索筛选
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    result = result.filter(item => 
+      (item.departmentName && item.departmentName.toLowerCase().includes(query)) ||
+      (item.submitterName && item.submitterName.toLowerCase().includes(query))
+    )
+  }
+  
+  return result
 })
 
 // 总记录数
 const total = computed(() => filteredAudits.value.length)
 
 // 计算总页数
-const totalPages = computed(() => Math.ceil(total.value / pageSize.value))
+// con监听搜索变化，重置到第一页
+watch(searchQuery, () => {
+  currentPage.value = 1
+})
+
+// st totalPages = computed(() => Math.ceil(total.value / pageSize.value))
 
 // 当前页显示的数据
 const audits = computed(() => {

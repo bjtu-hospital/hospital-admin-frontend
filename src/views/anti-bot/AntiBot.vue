@@ -18,7 +18,7 @@
               <AlertTriangle class="w-4 h-4" />
               高风险用户
               <span v-if="userType === 'high_risk'" class="px-2 py-0.5 bg-white/20 rounded text-xs">
-                {{ pagination.total }}
+                {{ total }}
               </span>
             </button>
             <button
@@ -33,7 +33,7 @@
               <User class="w-4 h-4" />
               正常用户
               <span v-if="userType === 'normal'" class="px-2 py-0.5 bg-white/20 rounded text-xs">
-                {{ pagination.total }}
+                {{ total }}
               </span>
             </button>
             <button
@@ -48,9 +48,20 @@
               <Lock class="w-4 h-4" />
               已封禁用户
               <span v-if="userType === 'banned'" class="px-2 py-0.5 bg-white/20 rounded text-xs">
-                {{ pagination.total }}
+                {{ total }}
               </span>
             </button>
+          </div>
+
+          <!-- 搜索框 -->
+          <div class="relative w-64">
+            <Search class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="搜索ID或用户名..."
+              class="w-full pl-9 pr-4 py-2 text-sm bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
           </div>
         </div>
 
@@ -58,7 +69,7 @@
         <div class="flex items-center gap-6 text-sm text-muted-foreground">
           <div class="flex items-center gap-2">
             <Shield class="w-4 h-4" />
-            <span>总用户数：<strong class="text-foreground">{{ pagination.total }}</strong></span>
+            <span>总用户数：<strong class="text-foreground">{{ total }}</strong></span>
           </div>
         </div>
       </div>
@@ -196,8 +207,8 @@
         <div class="flex items-center justify-between">
           <div class="text-sm text-muted-foreground">
             显示第 {{ (pagination.page - 1) * pagination.pageSize + 1 }} 到 
-            {{ Math.min(pagination.page * pagination.pageSize, pagination.total) }} 条，
-            共 {{ pagination.total }} 条
+            {{ Math.min(pagination.page * pagination.pageSize, total) }} 条，
+            共 {{ total }} 条
           </div>
           <div class="flex items-center gap-2">
             <button
@@ -224,7 +235,7 @@
             </div>
             <button
               @click="changePage(pagination.page + 1)"
-              :disabled="pagination.page === pagination.totalPages"
+              :disabled="pagination.page === totalPages"
               class="px-3 py-1.5 text-sm font-medium rounded-md border border-border bg-background hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               下一页
@@ -564,7 +575,7 @@
 
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
-import { User, Shield, AlertTriangle, Lock, Calendar, XCircle, X } from 'lucide-vue-next'
+import { User, Shield, AlertTriangle, Lock, Calendar, XCircle, X, Search } from 'lucide-vue-next'
 import { getUsers, banUser, unbanUser, getUserStats } from '@/api/antiBot'
 import { useToast } from '@/utils/toast'
 
@@ -572,17 +583,39 @@ const { success, error } = useToast()
 
 // 用户类型
 const userType = ref('high_risk') // 'high_risk' | 'normal' | 'banned'
+const searchQuery = ref('')
 
 // 用户列表
-const users = ref([])
+const allUsers = ref([])
 const isLoading = ref(false)
 
 // 分页
 const pagination = reactive({
   page: 1,
-  pageSize: 10,
-  total: 0,
-  totalPages: 0
+  pageSize: 10
+})
+
+// 过滤后的用户
+const filteredUsers = computed(() => {
+  if (!searchQuery.value) return allUsers.value
+  const query = searchQuery.value.toLowerCase()
+  return allUsers.value.filter(user => 
+    String(user.user_id).includes(query) || 
+    (user.name && user.name.toLowerCase().includes(query))
+  )
+})
+
+// 总数
+const total = computed(() => filteredUsers.value.length)
+
+// 总页数
+const totalPages = computed(() => Math.ceil(total.value / pagination.pageSize))
+
+// 当前页显示的用户
+const users = computed(() => {
+  const start = (pagination.page - 1) * pagination.pageSize
+  const end = start + pagination.pageSize
+  return filteredUsers.value.slice(start, end)
 })
 
 // 详情对话框
@@ -621,8 +654,8 @@ const loadUsers = async () => {
   isLoading.value = true
   try {
     const params = {
-      page: pagination.page,
-      page_size: pagination.pageSize
+      page: 1,
+      page_size: 1000 // 获取足够多的数据以支持前端搜索
     }
     
     // 根据用户类型设置筛选条件
@@ -644,7 +677,7 @@ const loadUsers = async () => {
       // 转换后端数据格式为前端需要的格式
       const rawUsers = response.message.users || []
       console.log('[AntiBot] 原始用户数据:', rawUsers)
-      users.value = rawUsers.map(user => ({
+      allUsers.value = rawUsers.map(user => ({
         user_id: user.user_id,
         name: user.username, // 使用 username 作为 name
         phone: user.username, // 暂时使用 username，后端可能需要提供真实的 phone
@@ -657,10 +690,7 @@ const loadUsers = async () => {
         // 保留原始数据
         _raw: user
       }))
-      console.log('[AntiBot] 转换后的用户数据:', users.value)
-      pagination.total = response.message.total || 0
-      pagination.totalPages = response.message.page_size ? Math.ceil(response.message.total / response.message.page_size) : 0
-      console.log('[AntiBot] 分页信息:', { total: pagination.total, totalPages: pagination.totalPages })
+      console.log('[AntiBot] 转换后的用户数据:', allUsers.value)
       console.log('[AntiBot] ✅ 用户列表加载成功')
     } else {
       console.error('[AntiBot] ❌ 响应 code 不为 0:', response.code, response.message)
@@ -677,15 +707,14 @@ const loadUsers = async () => {
 
 // 切换页码
 const changePage = (page) => {
-  if (page < 1 || page > pagination.totalPages) return
+  if (page < 1 || page > totalPages.value) return
   pagination.page = page
-  loadUsers()
 }
 
 // 可见页码
 const visiblePages = computed(() => {
   const pages = []
-  const total = pagination.totalPages
+  const total = totalPages.value
   const current = pagination.page
   
   if (total <= 7) {
@@ -871,7 +900,13 @@ const getBanDaysText = (user) => {
 // 监听用户类型变化
 watch(userType, () => {
   pagination.page = 1
+  searchQuery.value = '' // 切换类型时清空搜索
   loadUsers()
+})
+
+// 监听搜索变化
+watch(searchQuery, () => {
+  pagination.page = 1
 })
 
 // 初始加载

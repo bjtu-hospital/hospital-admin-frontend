@@ -7,16 +7,17 @@ const USE_MOCK = false
  * @param {string} user_type - 用户类型：'high' / 'low' / 'banned'
  * @param {number} page - 页码，默认 1
  * @param {number} page_size - 每页数量，默认 20
+ * @param {string} query - 搜索关键词（ID或用户名）
  */
-export const getUsers = async ({ user_type, page = 1, page_size = 20 }) => {
+export const getUsers = async ({ user_type, page = 1, page_size = 20, query = '' }) => {
     if (USE_MOCK) {
-        return mockGetUsers({ user_type, page, page_size })
+        return mockGetUsers({ user_type, page, page_size, query })
     }
 
     const response = await request({
         url: '/admin/anti-scalper/users',
         method: 'get',
-        params: { user_type, page, page_size }
+        params: { user_type, page, page_size, query }
     })
     return response.data
 }

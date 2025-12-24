@@ -86,10 +86,21 @@ export const mockNormalUsers = generateNormalUsers()
     })
 
 // Mock API 函数
-export const mockGetUsers = ({ user_type, page = 1, page_size = 10 }) => {
+export const mockGetUsers = ({ user_type, page = 1, page_size = 10, query = '' }) => {
     return new Promise((resolve) => {
         setTimeout(() => {
-            const users = user_type === 'high_risk' ? mockHighRiskUsers : mockNormalUsers
+            let users = user_type === 'high_risk' ? mockHighRiskUsers : mockNormalUsers
+            
+            // 搜索过滤
+            if (query) {
+                const lowerQuery = query.toLowerCase()
+                users = users.filter(user => 
+                    String(user.user_id).includes(lowerQuery) || 
+                    (user.username && user.username.toLowerCase().includes(lowerQuery)) ||
+                    (user.name && user.name.toLowerCase().includes(lowerQuery))
+                )
+            }
+
             const start = (page - 1) * page_size
             const end = start + page_size
             const paginatedUsers = users.slice(start, end)
