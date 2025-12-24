@@ -23,7 +23,10 @@ if (USE_MOCK) {
  *       sameDayDeadline: string,         // 当日挂号截止时间 HH:mm 格式
  *       noShowLimit: number,             // 爽约次数限制 (1-10)
  *       cancelHoursBefore: number,       // 退号提前时间（小时） (1-72)
- *       sameClinicInterval: number       // 同科室挂号间隔（天） (1-30)
+ *       paymentTimeoutMinutes: number,   // 支付超时时间（分钟）
+ *       sameClinicInterval: number,      // 同科室挂号间隔（天） (1-30)
+ *       maxAppointmentsPerPeriod: number,// 每个周期最大预约数
+ *       appointmentPeriodDays: number    // 预约周期天数
  *     },
  *     schedule: {                        // 排班配置
  *       maxFutureDays: number,           // 最多排未来天数 (7-180)
@@ -35,6 +38,12 @@ if (USE_MOCK) {
  *       eveningEnd: string,              // 晚班结束时间 HH:mm
  *       consultationDuration: number,    // 单次就诊时长（分钟） (5-60)
  *       intervalTime: number             // 就诊间隔时间（分钟） (0-30)
+ *     },
+ *     patientIdentityDiscounts: {        // 患者身份折扣配置
+ *       "student": number,                  // 学生折扣比例
+ *       "teacher": number,                  // 教师折扣比例
+ *       "staff": number,                    // 职工折扣比例
+ *       "external": number                  // 校外人员折扣比例
  *     }
  *   }
  * }
@@ -59,7 +68,10 @@ export const getSystemConfig = () => {
  * @param {string} config.registration.sameDayDeadline - 当日挂号截止时间
  * @param {number} config.registration.noShowLimit - 爽约次数限制
  * @param {number} config.registration.cancelHoursBefore - 退号提前时间
+ * @param {number} config.registration.paymentTimeoutMinutes - 支付超时时间
  * @param {number} config.registration.sameClinicInterval - 同科室挂号间隔
+ * @param {number} config.registration.maxAppointmentsPerPeriod - 每个周期最大预约数
+ * @param {number} config.registration.appointmentPeriodDays - 预约周期天数
  * @param {Object} config.schedule - 排班配置
  * @param {number} config.schedule.maxFutureDays - 最多排未来天数
  * @param {string} config.schedule.morningStart - 上午班开始时间
@@ -70,6 +82,11 @@ export const getSystemConfig = () => {
  * @param {string} config.schedule.eveningEnd - 晚班结束时间
  * @param {number} config.schedule.consultationDuration - 单次就诊时长
  * @param {number} config.schedule.intervalTime - 就诊间隔时间
+ * @param {Object} config.patientIdentityDiscounts - 患者身份折扣配置
+ * @param {number} config.patientIdentityDiscounts.student - 学生折扣比例
+ * @param {number} config.patientIdentityDiscounts.teacher - 教师折扣比例
+ * @param {number} config.patientIdentityDiscounts.staff - 职工折扣比例
+ * @param {number} config.patientIdentityDiscounts.external - 校外人员折扣比例
  * @returns {Promise} 返回更新结果
  * 
  * Response格式:

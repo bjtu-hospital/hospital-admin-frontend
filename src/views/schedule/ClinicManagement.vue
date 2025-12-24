@@ -438,11 +438,11 @@ const getClinicTypeName = (type) => {
   return map[type] || '未知'
 }
 
-// 初始化为本周（从2025-10-31所在的周开始）
+// 初始化为本周（从当前日期所在的周开始）
 const initWeek = () => {
-  // 固定使用2025年10月31日作为基准日期
-  const now = new Date('2025-10-31')
-  const day = now.getDay() // 5 (星期五)
+  // 使用当前日期作为基准日期
+  const now = new Date()
+  const day = now.getDay()
   const diff = now.getDate() - day + (day === 0 ? -6 : 1) // 调整为周一
   startDate.value = new Date(now.setDate(diff))
   startDate.value.setHours(0, 0, 0, 0)

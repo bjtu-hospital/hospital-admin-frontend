@@ -438,7 +438,7 @@ const nextWeek = () => {
 
 // 判断是否是今天
 const isToday = (dateStr) => {
-  const today = new Date('2025-10-31')
+  const today = new Date()
   const todayStr = today.toISOString().split('T')[0]
   return dateStr === todayStr
 }
@@ -450,7 +450,7 @@ const getSchedulesByDateAndTime = (date, timeSection) => {
 
 // 列表视图 - 初始化为本周
 const initWeekList = () => {
-  const now = new Date('2025-10-31')
+  const now = new Date()
   const day = now.getDay()
   const diff = now.getDate() - day + (day === 0 ? -6 : 1)
   listStartDate.value = new Date(now.setDate(diff))
@@ -504,7 +504,7 @@ const loadSchedules = async () => {
       endDate = listEndDate.value.toISOString().split('T')[0]
     } else {
       // 月历视图获取30天数据
-      const today = new Date('2025-10-31')
+      const today = new Date()
       const oneMonthLater = new Date(today)
       oneMonthLater.setMonth(today.getMonth() + 1)
       

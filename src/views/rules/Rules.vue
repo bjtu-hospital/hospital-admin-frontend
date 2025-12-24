@@ -114,6 +114,63 @@
             </div>
             <p class="text-xs text-muted-foreground">防止黄牛，同一患者在同科室挂号的最小间隔</p>
           </div>
+
+          <!-- 支付超时时间 -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-foreground flex items-center gap-2">
+              支付超时时间
+              <span class="text-xs text-muted-foreground font-normal">(5-120分钟)</span>
+            </label>
+            <div class="flex items-center gap-2">
+              <input
+                v-model.number="config.registration.paymentTimeoutMinutes"
+                type="number"
+                min="5"
+                max="120"
+                class="flex-1 px-3 py-2 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+              <span class="text-sm text-muted-foreground">分钟</span>
+            </div>
+            <p class="text-xs text-muted-foreground">挂号支付的超时时间，超过时间未支付将自动取消</p>
+          </div>
+
+          <!-- 每个周期最大预约数 -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-foreground flex items-center gap-2">
+              每个周期最大预约数
+              <span class="text-xs text-muted-foreground font-normal">(1-50次)</span>
+            </label>
+            <div class="flex items-center gap-2">
+              <input
+                v-model.number="config.registration.maxAppointmentsPerPeriod"
+                type="number"
+                min="1"
+                max="50"
+                class="flex-1 px-3 py-2 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+              <span class="text-sm text-muted-foreground">次</span>
+            </div>
+            <p class="text-xs text-muted-foreground">在预约周期内患者最多可以预约的次数</p>
+          </div>
+
+          <!-- 预约周期天数 -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-foreground flex items-center gap-2">
+              预约周期天数
+              <span class="text-xs text-muted-foreground font-normal">(1-30天)</span>
+            </label>
+            <div class="flex items-center gap-2">
+              <input
+                v-model.number="config.registration.appointmentPeriodDays"
+                type="number"
+                min="1"
+                max="30"
+                class="flex-1 px-3 py-2 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+              <span class="text-sm text-muted-foreground">天</span>
+            </div>
+            <p class="text-xs text-muted-foreground">计算患者预约次数的周期长度</p>
+          </div>
         </div>
       </div>
 
@@ -269,7 +326,97 @@
         </div>
       </div>
 
-      <!-- 操作按钮 -->
+      <!-- 患者身份折扣配置 -->
+      <div class="bg-card rounded-lg border border-border p-6">
+        <h2 class="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          患者身份折扣配置
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- 学生折扣 -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-foreground flex items-center gap-2">
+              学生折扣比例
+              <span class="text-xs text-muted-foreground font-normal">(0.1-1.0)</span>
+            </label>
+            <div class="flex items-center gap-2">
+              <input
+                v-model.number="config.patientIdentityDiscounts['student']"
+                type="number"
+                min="0.1"
+                max="1.0"
+                step="0.1"
+                class="flex-1 px-3 py-2 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+              <span class="text-sm text-muted-foreground">倍</span>
+            </div>
+            <p class="text-xs text-muted-foreground">学生身份的挂号费用折扣比例</p>
+          </div>
+
+          <!-- 教师折扣 -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-foreground flex items-center gap-2">
+              教师折扣比例
+              <span class="text-xs text-muted-foreground font-normal">(0.1-1.0)</span>
+            </label>
+            <div class="flex items-center gap-2">
+              <input
+                v-model.number="config.patientIdentityDiscounts['teacher']"
+                type="number"
+                min="0.1"
+                max="1.0"
+                step="0.1"
+                class="flex-1 px-3 py-2 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+              <span class="text-sm text-muted-foreground">倍</span>
+            </div>
+            <p class="text-xs text-muted-foreground">教师身份的挂号费用折扣比例</p>
+          </div>
+
+          <!-- 职工折扣 -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-foreground flex items-center gap-2">
+              职工折扣比例
+              <span class="text-xs text-muted-foreground font-normal">(0.1-1.0)</span>
+            </label>
+            <div class="flex items-center gap-2">
+              <input
+                v-model.number="config.patientIdentityDiscounts['staff']"
+                type="number"
+                min="0.1"
+                max="1.0"
+                step="0.1"
+                class="flex-1 px-3 py-2 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+              <span class="text-sm text-muted-foreground">倍</span>
+            </div>
+            <p class="text-xs text-muted-foreground">职工身份的挂号费用折扣比例</p>
+          </div>
+
+          <!-- 校外人员折扣 -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-foreground flex items-center gap-2">
+              校外人员折扣比例
+              <span class="text-xs text-muted-foreground font-normal">(0.1-1.0)</span>
+            </label>
+            <div class="flex items-center gap-2">
+              <input
+                v-model.number="config.patientIdentityDiscounts['external']"
+                type="number"
+                min="0.1"
+                max="1.0"
+                step="0.1"
+                class="flex-1 px-3 py-2 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+              <span class="text-sm text-muted-foreground">倍</span>
+            </div>
+            <p class="text-xs text-muted-foreground">校外人员的挂号费用折扣比例</p>
+          </div>
+        </div>
+      </div>
       <div class="flex items-center justify-end gap-3">
         <button
           @click="handleReset"
@@ -307,7 +454,10 @@ const config = ref({
     sameDayDeadline: '08:00',
     noShowLimit: 3,
     cancelHoursBefore: 24,
-    sameClinicInterval: 7
+    paymentTimeoutMinutes: 30,
+    sameClinicInterval: 7,
+    maxAppointmentsPerPeriod: 10,
+    appointmentPeriodDays: 8
   },
   schedule: {
     maxFutureDays: 60,
@@ -318,7 +468,13 @@ const config = ref({
     eveningStart: '18:30',
     eveningEnd: '21:00',
     consultationDuration: 15,
-    intervalTime: 5
+    intervalTime: 10
+  },
+  patientIdentityDiscounts: {
+    'student': 0.8,
+    'teacher': 0.8,
+    'staff': 0.8,
+    'external': 1.0
   }
 })
 
@@ -382,7 +538,7 @@ const handleReset = () => {
 
 // 验证配置
 const validateConfig = () => {
-  const { registration, schedule } = config.value
+  const { registration, schedule, patientIdentityDiscounts } = config.value
 
   // 验证挂号配置
   if (registration.advanceBookingDays < 1 || registration.advanceBookingDays > 90) {
@@ -397,8 +553,20 @@ const validateConfig = () => {
     toast.error('退号提前时间必须在1-72小时之间')
     return false
   }
+  if (registration.paymentTimeoutMinutes < 5 || registration.paymentTimeoutMinutes > 120) {
+    toast.error('支付超时时间必须在5-120分钟之间')
+    return false
+  }
   if (registration.sameClinicInterval < 1 || registration.sameClinicInterval > 30) {
     toast.error('同科室挂号间隔必须在1-30天之间')
+    return false
+  }
+  if (registration.maxAppointmentsPerPeriod < 1 || registration.maxAppointmentsPerPeriod > 50) {
+    toast.error('每个周期最大预约数必须在1-50之间')
+    return false
+  }
+  if (registration.appointmentPeriodDays < 1 || registration.appointmentPeriodDays > 30) {
+    toast.error('预约周期天数必须在1-30天之间')
     return false
   }
 
@@ -428,6 +596,16 @@ const validateConfig = () => {
   if (schedule.eveningStart >= schedule.eveningEnd) {
     toast.error('晚班开始时间必须早于结束时间')
     return false
+  }
+
+  // 验证患者身份折扣配置
+  const discountKeys = ['student', 'teacher', 'staff', 'external']
+  for (const key of discountKeys) {
+    const discount = patientIdentityDiscounts[key]
+    if (discount < 0.1 || discount > 1.0) {
+      toast.error(`${key}折扣比例必须在0.1-1.0之间`)
+      return false
+    }
   }
 
   return true
