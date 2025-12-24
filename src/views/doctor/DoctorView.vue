@@ -153,7 +153,7 @@
 
       <!-- 空状态 -->
       <div
-        v-if="filteredDoctors.length === 0"
+        v-if="doctors.length === 0"
         class="col-span-full flex flex-col items-center justify-center py-16 text-center"
       >
         <Stethoscope class="w-16 h-16 text-muted-foreground/50 mb-4" />
@@ -169,7 +169,7 @@
       <div class="flex items-center justify-between">
         <!-- 左侧：统计信息 -->
         <div class="text-sm text-muted-foreground">
-          共 <span class="font-semibold text-foreground">{{ filteredDoctors.length }}</span> 位医生
+          共 <span class="font-semibold text-foreground">{{ totalDoctors }}</span> 位医生
           <template v-if="pageSize !== 'all'">
             ，第 <span class="font-semibold text-foreground">{{ currentPage }}</span> / 
             <span class="font-semibold text-foreground">{{ totalPages }}</span> 页
@@ -1016,6 +1016,7 @@ const refreshDoctorPhoto = (doctorId) => {
 
 // 数据状态
 const doctors = ref([])
+const totalDoctors = ref(0)
 const majorDepartments = ref([])
 const minorDepartments = ref([])
 const selectedMajorId = ref(null)
@@ -1086,55 +1087,15 @@ const filteredMinorDepartments = computed(() => {
   return minorDepartments.value.filter(dept => dept.major_dept_id === selectedMajorId.value)
 })
 
-// 计算属性：过滤后的医生列表
-const filteredDoctors = computed(() => {
-  if (!doctors.value || !Array.isArray(doctors.value)) {
-    return []
-  }
-  
-  let result = doctors.value
-
-  // 按科室筛选
-  if (selectedMinorId.value !== null) {
-    // 选择了小科室，按小科室过滤
-    result = result.filter(doctor => doctor.dept_id === selectedMinorId.value)
-  } else if (selectedMajorId.value !== null) {
-    // 只选择了大科室，按大科室下的所有小科室过滤
-    const minorIds = filteredMinorDepartments.value.map(d => d.minor_dept_id)
-    result = result.filter(doctor => minorIds.includes(doctor.dept_id))
-  }
-
-  // 按关键词搜索
-  if (searchKeyword.value) {
-    const keyword = searchKeyword.value.toLowerCase()
-    result = result.filter(doctor =>
-      doctor.name.toLowerCase().includes(keyword) ||
-      doctor.title?.toLowerCase().includes(keyword) ||
-      doctor.specialty?.toLowerCase().includes(keyword) ||
-      doctor.introduction?.toLowerCase().includes(keyword)
-    )
-  }
-
-  return result
-})
-
 // 计算总页数
 const totalPages = computed(() => {
   if (pageSize.value === 'all') return 1
-  return Math.ceil(filteredDoctors.value.length / pageSize.value)
+  return Math.ceil(totalDoctors.value / pageSize.value)
 })
 
 // 计算当前页显示的医生
 const paginatedDoctors = computed(() => {
-  if (!filteredDoctors.value || filteredDoctors.value.length === 0) {
-    return []
-  }
-  if (pageSize.value === 'all') {
-    return filteredDoctors.value
-  }
-  const start = (currentPage.value - 1) * pageSize.value
-  const end = start + pageSize.value
-  return filteredDoctors.value.slice(start, end)
+  return doctors.value
 })
 
 // 计算可见的页码
@@ -1301,7 +1262,7 @@ const handleDelete = () => {
         toast.error(response.data.message?.detail || response.data.message || '删除失败')
         return
       }
-      doctors.value = doctors.value.filter(d => d.doctor_id !== selectedDoctor.value.doctor_id)
+      loadDoctors()
       showDeleteDialog.value = false
       showDetailDialog.value = false
       toast.success('医生删除成功')
@@ -1524,21 +1485,51 @@ const confirmDeletePhoto = () => {
 
 // 监听筛选条件变化，重置页码
 watch([selectedMajorId, selectedMinorId, searchKeyword], () => {
-  currentPage.value = 1
+  if (currentPage.value === 1) {
+    loadDoctors()
+  } else {
+    currentPage.value = 1
+  }
+})
+
+// 监听分页变化
+watch([currentPage, pageSize], () => {
+  loadDoctors()
 })
 
 // 加载医生数据
-const loadDoctors = (deptId = '') => {
-  doctorApi.getDoctors(deptId)
+const loadDoctors = () => {
+  const params = {
+    page: currentPage.value,
+    page_size: pageSize.value === 'all' ? 10000 : pageSize.value,
+    name: searchKeyword.value || undefined
+  }
+  
+  if (selectedMinorId.value) {
+    params.dept_id = selectedMinorId.value
+  }
+
+  doctorApi.getDoctors(params)
     .then(response => {
       if (response.data.code !== 0) {
         toast.error(response.data.message?.detail || response.data.message || '加载医生列表失败')
         return
       }
-      doctors.value = response.data.message.doctors.map(doctor => ({
+      
+      const data = response.data.message
+      doctors.value = data.doctors.map(doctor => ({
         ...doctor,
         is_registered: doctor.is_registered ?? false
       }))
+      totalDoctors.value = data.total
+
+      // Check if current page is out of bounds
+      if (pageSize.value !== 'all') {
+        const maxPage = Math.ceil(data.total / pageSize.value) || 1
+        if (currentPage.value > maxPage) {
+          currentPage.value = maxPage
+        }
+      }
     })
     .catch(error => {
       console.error('加载医生列表失败:', error)

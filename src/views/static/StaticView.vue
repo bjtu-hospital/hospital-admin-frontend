@@ -458,10 +458,10 @@
           <button
             v-for="dept in departmentList"
             :key="dept.minor_dept_id"
-            @click="handleDepartmentSelect(dept.minor_dept_id, dept.name)"
+            @click="handleDepartmentSelect(dept.minor_dept_id, dept.dept_name || dept.name || `科室${dept.minor_dept_id}`)"
             class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700 transition-all text-sm text-gray-900 dark:text-gray-100"
           >
-            {{ dept.name }}
+            {{ dept.dept_name || dept.name || `科室${dept.minor_dept_id}` }}
           </button>
         </div>
       </div>
@@ -600,7 +600,7 @@ const timeSeriesChartData = computed(() => {
 
 const departmentRankingData = computed(() => {
   return departmentRankingList.value.map(dept => ({
-    name: dept.dept_name,
+    name: dept.dept_name || dept.minor_dept_name || `科室${dept.minor_dept_id}`,
     value: rankingOrderBy.value === 'registrations' ? dept.registrations : dept.revenue,
     id: dept.minor_dept_id
   }))
@@ -614,7 +614,7 @@ const areaSlotTypeData = computed(() => {
 const areaDepartmentChartData = computed(() => {
   const departments = areaStats.value.departments || []
   return departments.map(dept => ({
-    name: dept.dept_name || `科室${dept.minor_dept_id}`,
+    name: dept.minor_dept_name || dept.dept_name || `科室${dept.minor_dept_id}`,
     value: dept.registrations,
     id: dept.minor_dept_id
   }))

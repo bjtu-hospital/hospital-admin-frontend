@@ -186,7 +186,17 @@
             </button>
           </div>
 
-          <div class="p-6 space-y-4">
+            <div class="p-6 space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-foreground mb-2">院区</label>
+              <select
+                v-model="clinicForm.area_id"
+                class="w-full px-3 py-2 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option :value="null">不指定（使用科室默认院区）</option>
+                <option v-for="area in areas" :key="area.area_id" :value="area.area_id">{{ area.name }}</option>
+              </select>
+            </div>
             <div>
               <label class="block text-sm font-medium text-foreground mb-2">门诊名称 *</label>
               <input
@@ -390,6 +400,7 @@
 import { ref, watch, computed, onMounted } from 'vue'
 import { Hospital, Plus, X, ChevronRight, ChevronLeft, Pencil } from 'lucide-vue-next'
 import * as scheduleApi from '@/api/schedule'
+import * as areaApi from '@/api/area'
 import { useToast } from '@/utils/toast'
 
 const props = defineProps({
@@ -409,6 +420,7 @@ const endDate = ref(new Date())
 const showAddClinicDialog = ref(false)
 const showEditClinicDialog = ref(false)
 const clinicForm = ref({
+  area_id: null,
   name: '',
   clinic_type: 0,
   address: ''
@@ -422,6 +434,22 @@ const editClinicForm = ref({
   default_price_expert: null,
   default_price_special: null
 })
+
+const areas = ref([])
+
+const loadAreas = async () => {
+  try {
+    const response = await areaApi.getHospitalAreas()
+    if (response.data && response.data.code === 0) {
+      areas.value = response.data.message.areas || []
+    } else {
+      areas.value = []
+    }
+  } catch (err) {
+    console.error('加载院区失败:', err)
+    areas.value = []
+  }
+}
 
 // 切换门诊展开/折叠
 const toggleClinic = (clinicId) => {
@@ -533,7 +561,8 @@ const handleAddClinic = async () => {
   try {
     const data = {
       ...clinicForm.value,
-      minor_dept_id: props.deptId
+      minor_dept_id: props.deptId,
+      area_id: clinicForm.value.area_id || undefined
     }
     
     const response = await scheduleApi.createClinic(data)
@@ -544,7 +573,7 @@ const handleAddClinic = async () => {
 
     toast.success('门诊创建成功')
     showAddClinicDialog.value = false
-    clinicForm.value = { name: '', clinic_type: 0, address: '' }
+    clinicForm.value = { area_id: null, name: '', clinic_type: 0, address: '' }
     loadClinics()
   } catch (error) {
     console.error('创建门诊失败:', error)
@@ -618,6 +647,8 @@ watch(() => props.deptId, () => {
   loadClinics()
 }, { immediate: true })
 
-// 初始化周
-initWeek()
+onMounted(() => {
+  initWeek()
+  loadAreas()
+})
 </script>
