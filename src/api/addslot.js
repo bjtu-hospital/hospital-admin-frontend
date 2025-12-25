@@ -85,15 +85,25 @@ export async function getDoctors(params) {
 }
 
 /**
- * 根据医生ID获取当日排班
- * GET /admin/doctors/{doctor_id}/schedules/today
+ * 根据医生ID获取排班（今天起未来7天）
+ * GET /admin/doctors/{doctor_id}/schedules?start_date={start_date}&end_date={end_date}
  */
 export async function getDoctorSchedulesToday(doctorId) {
     if (USE_MOCK) {
         return getMockDoctorSchedulesToday(doctorId)
     }
 
-    const response = await axios.get(`/admin/doctors/${doctorId}/schedules/today`)
+    // 计算今天和7天后的日期
+    const today = new Date()
+    const startDate = today.toISOString().split('T')[0] // YYYY-MM-DD
+    const endDate = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+
+    const params = {
+        start_date: startDate,
+        end_date: endDate
+    }
+
+    const response = await axios.get(`/admin/doctors/${doctorId}/schedules`, { params })
     return response.data
 }
 

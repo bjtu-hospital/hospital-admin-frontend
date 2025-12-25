@@ -2,7 +2,13 @@ import axios from "./axios"
 
 // 获取医生列表（支持dept_id和name参数过滤）
 export const getDoctors = (params = {}) => {
-    return axios.get('/admin/doctors', { params })
+    // 默认获取所有医生，设置较大的page_size
+    const defaultParams = {
+        page: 1,
+        page_size: 10000,
+        ...params
+    }
+    return axios.get('/admin/doctors', { params: defaultParams })
 }
 
 // 创建医生（可选是否同时创建账号）

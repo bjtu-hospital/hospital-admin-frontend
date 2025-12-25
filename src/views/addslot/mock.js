@@ -130,7 +130,7 @@ export function getMockDoctors(params = {}) {
 }
 
 /**
- * 根据医生ID获取当日排班
+ * 根据医生ID获取排班（今天起未来7天）
  */
 export function getMockDoctorSchedulesToday(doctorId) {
     return new Promise((resolve) => {
@@ -145,43 +145,55 @@ export function getMockDoctorSchedulesToday(doctorId) {
                 return
             }
 
-            // 模拟该医生当日的排班
-            const schedules = [
-                {
-                    schedule_id: 100 + doctorId,
-                    time_section: '上午',
+            // 生成今天起未来7天的日期
+            const today = new Date()
+            const schedules = []
+
+            for (let i = 0; i < 7; i++) {
+                const currentDate = new Date(today.getTime() + i * 24 * 60 * 60 * 1000)
+                const dateStr = currentDate.toISOString().split('T')[0]
+                const weekDay = ['日', '一', '二', '三', '四', '五', '六'][currentDate.getDay()]
+
+                // 上午排班
+                schedules.push({
+                    schedule_id: 100 + doctorId * 10 + i * 2,
+                    doctor_id: doctorId,
+                    doctor_name: doctor.name,
                     clinic_id: 5,
                     clinic_name: '心内科门诊',
                     clinic_type: 1, // 0=普通门诊, 1=专家门诊, 2=特需门诊
-                    minor_dept_name: doctor.department_name,
+                    date: dateStr,
+                    week_day: `星期${weekDay}`,
+                    time_section: '上午',
                     slot_type: '专家',
                     total_slots: 20,
-                    remaining_slots: 5,
-                    price: 120.00,
+                    remaining_slots: Math.floor(Math.random() * 20),
                     status: '正常',
-                    available_slot_types: ['普通', '专家']
-                },
-                {
-                    schedule_id: 200 + doctorId,
-                    time_section: '下午',
+                    price: 120.00
+                })
+
+                // 下午排班
+                schedules.push({
+                    schedule_id: 200 + doctorId * 10 + i * 2,
+                    doctor_id: doctorId,
+                    doctor_name: doctor.name,
                     clinic_id: 6,
                     clinic_name: '普通门诊',
                     clinic_type: 0,
-                    minor_dept_name: doctor.department_name,
+                    date: dateStr,
+                    week_day: `星期${weekDay}`,
+                    time_section: '下午',
                     slot_type: '普通',
                     total_slots: 30,
-                    remaining_slots: 12,
-                    price: 60.00,
+                    remaining_slots: Math.floor(Math.random() * 30),
                     status: '正常',
-                    available_slot_types: ['普通']
-                }
-            ]
+                    price: 60.00
+                })
+            }
 
             resolve({
                 code: 0,
                 message: {
-                    doctor_id: doctorId,
-                    date: '2025-11-14',
                     schedules
                 }
             })

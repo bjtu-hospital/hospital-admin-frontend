@@ -79,11 +79,11 @@ const loadDoctorsAndPatients = async () => {
   try {
     // 并行请求医生和患者数据
     const [doctorsRes, patientsRes] = await Promise.all([
-      getDoctors({}).catch(err => {
+      getDoctors({ page_size: 10000 }).catch(err => {
         console.error('加载医生列表失败:', err)
         return { code: -1, message: [] }
       }),
-      getPatients({}).catch(err => {
+      getPatients({ page_size: 10000 }).catch(err => {
         console.error('加载患者列表失败:', err)
         return { code: -1, message: [] }
       })

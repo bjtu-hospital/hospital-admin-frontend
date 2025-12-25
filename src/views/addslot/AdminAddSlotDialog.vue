@@ -256,7 +256,19 @@ const formData = reactive({
 })
 
 const availableSlotTypes = computed(() => {
-  return selectedSchedule.value?.available_slot_types || []
+  if (!selectedSchedule.value) return []
+  
+  const clinicType = selectedSchedule.value.clinic_type
+  switch (clinicType) {
+    case 0: // 普通门诊
+      return ['普通']
+    case 1: // 专家门诊
+      return ['普通', '专家']
+    case 2: // 特需门诊
+      return ['普通', '专家', '特需']
+    default:
+      return ['普通']
+  }
 })
 
 const canSubmit = computed(() => {
